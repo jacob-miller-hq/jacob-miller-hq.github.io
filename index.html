@@ -1,22 +1,120 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title>Jake Miller</title>
-    <meta name="author" content="Jake Miller"/>
-    <link href="css/style.css" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css?family=Coda|Staatliches" rel="stylesheet">
-    <script src="script/main.js" type="text/javascript"></script>
-  </head>
-  <body>
-    <div id="page-wrapper">
-      <div id="header">
-        <a id="name" href="#animation">Jake Miller</a>
-        <p>A Student</p>
+<html lang="en">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+  <!-- Google Fonts -->
+  <!-- <link href="https://fonts.googleapis.com/css?family=Coda|Staatliches" rel="stylesheet"> -->
+
+  <!-- My scripts/styles -->
+  <link href="css/style.css" rel="stylesheet" />
+  <script src="script/main.js" type="text/javascript"></script>
+
+  <!-- Title/author -->
+  <title>Jake Miller</title>
+  <meta name="author" content="Jake Miller" />
+</head>
+
+<body>
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <a id="name" class="navbar-brand" href="#">Jake Miller</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link active" href="#">Home<span class="sr-only">(current)</span></a>
+          <a class="nav-item nav-link" href="#contact">Contact</a>
+          <a class="nav-item nav-link" href="#resume">Resume</a>
+          <a class="nav-item nav-link" href="#projects">Projects</a>
+        </div>
       </div>
-      <div id="animation">
-        <canvas id="animation"></canvas>
+    </nav>
+  </header>
+
+  <main role="main">
+    <canvas id="fourier"></canvas>
+  </main>
+  <div class="container" id="projects">
+    <h1 class="text-center">Projects</h1>
+    <div class="row justify-content-md-center text-center">
+      <div class="col-lg-4">
+        <h2>Home Specs</h2>
+        <img src="home_specs_launcher.png" class="rounded" height=192 alt="Home Specs Icon">
+        <p> Here is a bunch of stuff about project one,
+          on which I will expand in the near future,
+          but currently, it does not matter.
+        </p>
+      </div>
+      <div class="col-lg-4">
+        <h2>ML Research Project</h2>
+        <img src="gen-fit.png" class="rounded" height=192 alt="Generational Fitnesses">
+        <p> Here is a bunch of stuff about project two,
+          on which I will expand in the near future,
+          but currently, it does not matter.
+        </p>
+      </div>
+      <div class="col-lg-4">
+        <h2>Image Manipulation</h2>
+        <img src="blotch-bouquet.png" class="rounded" height=192 alt="Generational Fitnesses">
+        <p> Here is a bunch of stuff about project three,
+          on which I will expand in the near future,
+          but currently, it does not matter.
+        </p>
       </div>
     </div>
-  </body>
+  </div>
+
+  <hr class="featurette-divider">
+
+  <div class="container" id="resume">
+    <h1 class="text-center">Resume</h1>
+    <div class="row justify-content-md-center">
+      <div class="col-md-auto">
+        <p> This will eventually be an embedded resume maybe?
+          or perhaps just a nicer looking website version of my resume.
+          But this is where it will exist.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="featurette-divider">
+
+  <div class="container" id="contact">
+    <h1 class="text-center">Contact</h1>
+    <div class="row justify-content-md-center">
+      <div class="col-md-auto text-center">
+        <h4>Jake Miller</h4>
+        <p>(630) 605-3056<br>
+          jgmillr2@illinois.edu</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="featurette-divider">
+
+  <footer class="container">
+    <p class="float-right">
+      <a href="#contact">Contact</a>
+    </p>
+    <p>
+      Designed and implemented by Jake Miller
+    </p>
+  </footer>
+
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+</body>
+
 </html>

@@ -1,34 +1,17 @@
-* {
-  margin:0px;
-  padding:0px;
-  font-family: "Staatliches", "Courier New", monospace;
-}
-
-a, p {
-  color: black;
-}
-
-#page-wrapper {
+canvas#fourier {
   width:100%;
+  background-color: #eee;
 }
 
-#header {
-  width: 100%;
-  text-align: center;
+ul.dashed {
+  list-style-type: none;
 }
 
-#name {
-  font-size: 48px;
-  font-family: "Coda", fantasy;
+ul.dashed > li {
+  text-indent: 5px;
 }
 
-div#animation {
-  height: 40vh;
-  align-items: center;
-}
-
-canvas#animation {
-  height: 100%;
-  width: 100%;
-  background-color: #dddddd
+ul.dashed > li::before {
+  content: "-";
+  text-indent: 5px;
 }
