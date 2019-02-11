@@ -1,6 +1,16 @@
 canvas#fourier {
   width:100%;
-  background-color: #eee;
+  position: relative;
+}
+
+#canvas-holder {
+  margin-top: -2%;
+  margin-bottom:-16%;
+}
+
+div.transparency {
+  background-color: #ffffffaf;
+  position: relative;
 }
 
 ul.dashed {

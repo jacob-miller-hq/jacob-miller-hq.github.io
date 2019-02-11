@@ -1,4 +1,7 @@
-
+// TODO: handle resize
+// TODO: conver image to trace (research methods)
+// TODO: allow for play/pause/interaction?
+// TODO: remove background image
 var cvs, ctx;
 var w, h;
 var bg;
