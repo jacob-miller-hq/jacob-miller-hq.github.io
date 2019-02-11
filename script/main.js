@@ -3,25 +3,6 @@ var cvs, ctx;
 var w, h;
 var bg;
 var imgData, data;
-var palette = [
-    [0,     0,      0,      255],
-    [255,   0,      0,      255],
-    [255,   255,    0,      255],
-    [0,     255,    0,      255],
-    [0,     255,    255,    255],
-    [0,     0,      255,    255],
-    [255,   0,      255,    255],
-    [255,   255,    255,    255],
-    [0,     0,      0,      0]
-
-
-    // [0,     0,      0,      255],
-    // [255,   0,      0,      255],
-    // [0,     255,    0,      255],
-    // [0,     0,      255,    255],
-    // [255,   255,    255,    255],
-    // [0,     0,      0,      0]
-]
 
 Uint32Array.prototype.swap = function (x,y) {
     let b = this[x];
@@ -38,109 +19,31 @@ Array.prototype.swap = function (x,y) {
 }
 
 var signature = [
-    100, -100,
-    50, 100,
-    130, 130,
-    100, 130,
-]
-
-var bad_square = [
-    -100, -100,
-    -90, -100,
-    -80, -100,
-    -70, -100,
-    -60, -100,
-    -50, -100,
-    -40, -100,
-    -30, -100,
-    -20, -100,
-    -10, -100,
-    0, -100,
-    10, -110,
-    20, -150,
-    30, -200,
-    40, -200,
-    50, -150,
-    60, -110,
-    70, -100,
-    80, -100,
-    90, -100,
-    100, -100,
-    100, -90,
-    100, -80,
-    100, -70,
-    100, -60,
-    100, -50,
-    100, -40,
-    100, -30,
-    100, -20,
-    100, -10,
-    100, 0,
-    100, 10,
-    100, 20,
-    100, 30,
-    100, 40,
-    100, 50,
-    100, 60,
-    100, 70,
-    100, 80,
-    100, 90,
-    100, 100,
-    100, 110,
-    100, 120,
-    100, 130,
-    110, 130,
-    120, 130,
-    130, 130,
-    130, 120,
-    130, 110,
-    130, 100,
-    120, 100,
-    110, 100,
-    100, 100,
-    90, 100,
-    80, 100,
-    70, 100,
-    60, 100,
-    50, 100,
-    40, 100,
-    30, 100,
-    20, 100,
-    10, 100,
-    0, 100,
-    -10, 100,
-    -20, 100,
-    -30, 100,
-    -40, 100,
-    -50, 100,
-    -60, 100,
-    -70, 100,
-    -80, 100,
-    -90, 100,
-    -100, 100,
-    -90, 90,
-    -50, 80,
-    0, 70,
-    0, 60,
-    -10, 50,
-    -20, 20,
-    -30, 0,
-    -40, 20,
-    -50, 50,
-    -90, 40,
-    -100, 30,
-    -100, 20,
-    -100, 10,
-    -100, 0,
-    -100, -10,
-    -100, -20,
-    -100, -30,
-    -100, -40,
-    -100, -50,
-    -100, -60,
-    -100, -70,
-    -100, -80,
-    -100, -90,
+  // J
+  -680, 125,
+  -720, 80,
+  -735, 20,
+  -720, -125,
+  -700, -195,
+  -680, -245,
+  -650, -300,
+  -620, -345,
+  -585, -370,
+  -570, -360,
+  -555, -300,
+  -560, -200,
+  -600, 0,
+  -660, 200,
+  -720, 355,
+  -710, 250,
+  // a
+  -580, 80,
+  // c
+  -520, 100,
+  // o
+  -460, 60,
+  // b
+  -340, -60
 ]
 
 var face = [
@@ -263,7 +166,7 @@ var face = [
     10, 14,
 ]
 
-var _path = face;
+var _path = signature;
 
 var complex = [
     66.75, -53.07,
@@ -291,7 +194,7 @@ var drawPath = true;
 
 function circlesLoop() {
     ctx.clearRect(0, 0, w, h);
-    // ctx.drawImage(bg, 0, 0, w, h);
+    ctx.drawImage(bg, marginX, marginY, bg.width, bg.height);
     if(numCircles == null) {
         // numCircles = 3;
         numCircles = circles.length/3;
@@ -334,13 +237,13 @@ function circlesLoop() {
     if(drawPath) {
         drawPaths(paths, 1);
 
-        // ctx.fillStyle = "#ff0000"
-        // drawPathPoints();
+        ctx.fillStyle = "#ff0000"
+        drawPathPoints();
     } else {
         drawPaths(paths, 1);
 
-        // ctx.fillStyle = "#ff0000"
-        // drawPathPoints();
+        ctx.fillStyle = "#ff0000"
+        drawPathPoints();
     }
 
     ctx.beginPath();
@@ -413,7 +316,7 @@ function drawPaths(arr=paths, num=1) {
         for(let i = 2; i < path.length; i+=2) {
             ctx.lineTo(path[i], path[i+1]);
         }
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 10;
         ctx.lineJoint = 'round';
         if(p == paths.length-1) {
             ctx.strokeStyle = "#000000";
@@ -460,7 +363,7 @@ function getComplexFromPath(deg, src=_path) {
         dest.push(real/(src.length/2));
         dest.push(imag/(src.length/2));
     }
-    // console.log(dest);
+    // console.log(dest[0] + " " + dest[1]);
     return dest;
 }
 
@@ -565,7 +468,7 @@ function main() {
 
     // randomizePath(3);
     linearizePath(1);
-    epicycles();
+    // epicycles();
 }
 
 function linearizePath(pointsPer) {
@@ -597,25 +500,29 @@ function epicycles(deg=null, path=_path) {
     complex = getComplexFromPath(deg, path);
     circles = getCirclesFromComplex(complex);
     sortCircles();
-    circles.splice(0, 3)
+    // circles.splice(0, 3)
     circlesLoop();
 }
+
+marginPerc = .05
+marginX = 10
+marginY = 1
 
 function init() {
     console.log("loaded.");
 
     cvs = document.getElementById('fourier');
     ctx = cvs.getContext('2d');
+    w = cvs.width
+    h = cvs.height
+    cvs.width = window.innerWidth;
+    cvs.height = window.innerWidth * h / w;
 
-    // bg = new Image(50, 50);
+    marginX = cvs.width * marginPerc
+    marginY = cvs.height * marginPerc
 
-    // bg = new Image(1067, 1600);
-    bg = new Image(800, 300);
-    // bg = new Image(266, 400);
-    // bg = new Image(133, 200);
-    // bg = new Image(66, 100);
-    // bg.src = 'portrait-small.jpg';
-    bg.src = '../home_specs_launcher.png';
+    bg = new Image(cvs.width - 2*marginX, cvs.height - 2*marginY);
+    bg.src = '../Signature.png';
 
     // bg = new Image(400, 400);
     // bg = new Image(100, 100);
@@ -630,9 +537,9 @@ function init() {
     // bg.src = 'splotch-portrait.png'
 
     bg.onload = function() {
-        w = cvs.width = bg.width;
-        h = cvs.height = bg.height;
-        ctx.drawImage(bg, 0, 0, w, h);
+        w = cvs.width;
+        h = cvs.height;
+        ctx.drawImage(bg, marginX, marginY, bg.width, bg.height);
         main();
     }
 }
