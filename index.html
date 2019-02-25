@@ -40,12 +40,27 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link active" href="#">Home<span class="sr-only">(current)</span></a>
-          <a class="nav-item nav-link" href="#contact">Contact</a>
-          <a class="nav-item nav-link" href="#resume">Resume</a>
-          <a class="nav-item nav-link" href="#projects">Projects</a>
-        </div>
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home<span class="sr-only">(current)</span></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-item nav-link" href="#contact">Contact</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-item nav-link" href="#resume">Resume</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              Projects
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" href="homeinfo.html">Home Info</a>
+              <a class="dropdown-item" href="mechmania.html">MechMania</a>
+              <a class="dropdown-item" href="imgmanip.html">Image Manipulation</a>
+            </div>
+          </li>
+      </div>
       </div>
     </nav>
   </header>
@@ -54,74 +69,86 @@
     <canvas id="fourier"></canvas>
   </main>
   <div class="transparency">
-  <div class="container" id="projects">
-    <h1 class="text-center">Projects</h1>
-    <div class="row justify-content-md-center text-center">
-      <div class="col-lg-4" style="cursor: pointer;" onclick="window.location='https://play.google.com/store/apps/details?id=com.realtycool.homespecs_v2&hl=en';">
-        <h2>Home Info</h2>
-        <img src="home_specs_launcher.png" class="rounded" height=192 alt="Home Specs Icon">
-        <p> Home Info is an MLS entry app for Android. I created it for my
-          parents' realty company to ease the process of data entry.
-        </p>
-      </div>
-      <div class="col-lg-4">
-        <h2>ML Research Project</h2>
-        <img src="gen-fit.png" class="rounded" height=192 alt="Generational Fitnesses">
-        <p> I performed some research on activation functions in threshold and
-          coefficient networks. Implemented with Numpy in Python.
-        </p>
-      </div>
-      <div class="col-lg-4">
-        <h2>Image Manipulation</h2>
-        <img src="blotch-bouquet.png" class="rounded" height=192 alt="Generational Fitnesses">
-        <p> Several image manipulation and filtering tools created in javascript.
-          Everything from dithering to k-means coloring to Fourier decomposition.
-        </p>
-      </div>
-    </div>
-  </div>
-  <div>
-
-  <hr class="featurette-divider">
-
-  <div class="container" id="resume">
-    <h1 class="text-center">Resume</h1>
-    <div class="row justify-content-md-center">
-        <div class='embed-responsive' style='padding-bottom:100%'>
-          <object data='Miller_Jacob_Resume.pdf' type='application/pdf' width='100%' height='100%'></object>
+    <div class="container" id="projects">
+      <h1 class="text-center">Projects</h1>
+      <div class="row justify-content-md-center text-center">
+        <div class="col-lg-4">
+          <div style="cursor: pointer;" onclick="window.location='homeinfo.html';">
+            <h2>Home Info</h2>
+            <img src="home_specs_launcher.png" class="rounded" height=192 alt="Home Specs Icon">
+          </div>
+          <p> Home Info is an MLS entry app for Android. I created it for my
+            parents' realty company to ease the process of data entry.
+            <br />
+            <a href="homeinfo.html">Read more...</a>
+          </p>
         </div>
-    </div>
-  </div>
-
-  <hr class="featurette-divider">
-
-  <div class="container" id="contact">
-    <h1 class="text-center">Contact</h1>
-    <div class="row justify-content-md-center">
-      <div class="col-md-auto text-center">
-        <h4>Jacob Miller</h4>
-        <p>(630) 605-3056<br>
-          jgmillr2@illinois.edu</p>
+        <div class="col-lg-4">
+          <div style="cursor: pointer;" onclick="window.location='mechmania.html';">
+            <h2>MechMania</h2>
+            <img src="reflectionsprojections.svg" class="rounded" height=192 alt="Reflections Projections Logo">
+          </div>
+          <p> Participated in yearly team hackathon focused on artificial
+            intelligence and solving problems with a couple of friends.
+            <br />
+            <a href="mechmania.html">Read more...</a>
+          </p>
+        </div>
+        <div class="col-lg-4">
+          <div style="cursor: pointer;" onclick="window.location='imgmanip.html';">
+            <h2>Image Manipulation</h2>
+            <img src="blotch-bouquet.png" class="rounded" height=192 alt="Blotchy Bouquet">
+          </div>
+          <p> Several image manipulation and filtering tools created in javascript.
+            Everything from dithering to k-means coloring to Fourier decomposition.
+            <br />
+            <a href="imagemanip.html">Read more...</a>
+          </p>
+        </div>
       </div>
     </div>
-  </div>
+    <div>
 
-  <hr class="featurette-divider">
+      <hr class="featurette-divider">
 
-  <footer class="container">
-    <p class="float-right">
-      <a href="#contact">Contact</a>
-    </p>
-    <p>
-      Designed and implemented by Jake Miller
-    </p>
-  </footer>
+      <div class="container" id="resume">
+        <h1 class="text-center">Resume</h1>
+        <div class="row justify-content-md-center">
+          <div class='embed-responsive' style='padding-bottom:100%'>
+            <object data='Miller_Jacob_Resume.pdf' type='application/pdf' width='100%' height='100%'></object>
+          </div>
+        </div>
+      </div>
 
-  <!-- Optional JavaScript -->
-  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+      <hr class="featurette-divider">
+
+      <div class="container" id="contact">
+        <h1 class="text-center">Contact</h1>
+        <div class="row justify-content-md-center">
+          <div class="col-md-auto text-center">
+            <h4>Jacob Miller</h4>
+            <p>(630) 605-3056<br>
+              jgmillr2@illinois.edu</p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="featurette-divider">
+
+      <footer class="container">
+        <p class="float-right">
+          <a href="#contact">Contact</a>
+        </p>
+        <p>
+          Designed and implemented by Jake Miller
+        </p>
+      </footer>
+
+      <!-- Optional JavaScript -->
+      <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+      <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+      <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 </body>
 
 </html>

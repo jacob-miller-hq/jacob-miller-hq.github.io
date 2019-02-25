@@ -1,10 +1,18 @@
 canvas#fourier {
-  width:100%;
+  width: 100%;
   position: relative;
 }
 
 #canvas-holder {
-  margin-bottom:-16%;
+  margin-bottom: -16%;
+}
+
+a.link-btn {
+  background: #ddd;
+  padding: 8px;
+  margin: 8px;
+  display: inline-block;
+  color: black
 }
 
 div.transparency {
@@ -12,15 +20,38 @@ div.transparency {
   position: relative;
 }
 
+div.main {
+  text-align: center;
+  margin-top: 32px;
+}
+
+#play-store-badge {
+  height:64px;
+}
+
+img.gallery {
+  margin:4px;
+  width: 150px;
+  height: 200px;
+  object-fit: cover;
+}
+
+.footer {
+  font-size: 8pt;
+  color: #444;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
 ul.dashed {
   list-style-type: none;
 }
 
-ul.dashed > li {
+ul.dashed>li {
   text-indent: 5px;
 }
 
-ul.dashed > li::before {
+ul.dashed>li::before {
   content: "-";
   text-indent: 5px;
 }
