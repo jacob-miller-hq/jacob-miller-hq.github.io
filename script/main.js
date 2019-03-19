@@ -1,7 +1,5 @@
-// TODO: handle resize
 // TODO: conver image to trace (research methods)
 // TODO: allow for play/pause/interaction?
-// TODO: remove background image
 var cvs, ctx;
 var w, h;
 var bg;
@@ -79,7 +77,7 @@ var circles = [
 
 var count = 0;
 
-var countPerOne = 360;
+var countPerOne = 45;
 var paths = [];
 var deg = 20;
 var numCircles = 2;
@@ -117,27 +115,9 @@ function circlesLoop() {
     }
     joints.push(x, y);
 
-    // for(let i = 0; i < path.length; i+=2) {
-    //     ctx.beginPath();
-    //     ctx.moveTo(w/2, h/2);
-    //     ctx.lineTo(path[i], path[i+1]);
-    //     ctx.lineWidth = 1;
-    //     ctx.lineJoin = 'round';
-    //     ctx.strokeStyle = "rgba(0, 0, 0, 0.01)";
-    //     ctx.stroke();
-    // }
+    drawPaths(paths, 1);
 
-    if(drawPath) {
-        drawPaths(paths, 1);
-
-        ctx.fillStyle = "#ff0000"
-        // drawPathPoints();
-    } else {
-        drawPaths(paths, 1);
-
-        ctx.fillStyle = "#ff0000"
-        // drawPathPoints();
-    }
+    ctx.fillStyle = "#ff0000"
 
     ctx.beginPath();
     ctx.moveTo(joints[0], joints[1]);
@@ -154,37 +134,20 @@ function circlesLoop() {
     } else {
         ctx.clearRect(0, 0, w, h);
 
-        // for(let i = 0; i < path.length; i+=2) {
-        //     ctx.beginPath();
-        //     ctx.moveTo(w/2, h/2);
-        //     ctx.lineTo(path[i], path[i+1]);
-        //     ctx.lineWidth = 1;
-        //     ctx.lineJoin = 'round';
-        //     ctx.strokeStyle = "rgba(0, 0, 0, 0.01)";
-        //     ctx.stroke();
-        // }
-
         drawPaths(paths, 1);
 
         ctx.fillStyle = "#ff0000"
-        if(drawPath) {
-            // drawPathPoints();
-        }
 
         count = 0;
         // deg--;
         if(numCircles < circles.length/3) {
-            // complex = getComplexFromPath(deg, centerPath(paths[paths.length-1]));
-            // complex = getComplexFromPath(deg, _path);
-            // circles = getCirclesFromComplex(complex, 1);
-            // sortCircles();
             paths = [];
-            if(numCircles >= 300) {
+            if(numCircles >= 32) {
                 numCircles = circles.length/3;
+                countPerOne = 540
             } else {
-                // numCircles++;
-                // numCircles+=2;
                 numCircles *= 2;
+                countPerOne += 90;
             }
             console.log(numCircles);
             circlesLoop();
@@ -192,13 +155,8 @@ function circlesLoop() {
             if(drawPath) {
                 console.log('done');
             }
-            if(countPerOne >= 540) {
-              drawPath = false;
-              countPerOne *= 2;
-            } else {
-              countPerOne = 540;
-              paths=[];
-            }
+            drawPath = false;
+            countPerOne *= 2;
             circlesLoop();
         }
     }
@@ -222,25 +180,6 @@ function drawPaths(arr=paths, num=1) {
     // ctx.lineWidth = 10
     ctx.stroke()
   }
-    // if(num > paths.length ||  num < 1) {
-    //     num = paths.length;
-    // }
-    // for(let p = paths.length-num; p < paths.length; p++) {
-    //     let path = paths[p];
-    //     ctx.beginPath();
-    //     ctx.moveTo(path[0], path[1]);
-    //     for(let i = 2; i < path.length; i+=2) {
-    //         ctx.lineTo(path[i], path[i+1]);
-    //     }
-    //     ctx.lineWidth = 10;
-    //     ctx.lineJoint = 'round';
-    //     if(p == paths.length-1) {
-    //         ctx.strokeStyle = "#000000";
-    //     } else {
-    //         ctx.strokeStyle = "rgb(0,0,0,"+(0.1-(p/paths.length))+")"
-    //     }
-    //     ctx.stroke();
-    // }
 }
 
 function mag(x, y) {
@@ -283,12 +222,6 @@ function getComplexFromPath(deg, src=_path) {
     return dest;
 }
 
-function drawPathPoints(src=_path) {
-    for(let i = 0; i < src.length; i+=2) {
-        ctx.fillRect(w/2 + src[i], h/2 + src[i+1], 1, 1);
-    }
-}
-
 function sortCircles() {
     for(let i = 0; i < circles.length; i+=3) {
         let j = i;
@@ -305,88 +238,6 @@ function sortCircles() {
 function main() {
     imgData = ctx.getImageData(0, 0, w, h);
     data = imgData.data;
-    // console.log(data);
-
-    // palette.push(rgbToArr(0x31E9BB));
-    // palette.push(rgbToArr(0x4BF058));
-    // palette.push(rgbToArr(0x8031F6));
-    // palette.push(rgbToArr(0xAB2A61));
-    // palette.push(rgbToArr(0x4A3B33));
-
-    // for(let i = 0; i < 5; i++) {
-    //     palette.push(rgbToArr(Math.floor(Math.random() * 0xffffff)))
-    // }
-    // for(let i = 0; i < 5; i++) {
-    //     palette.push(rgbaToArr(Math.floor(Math.random() * 0xffffffff)));
-    // }
-
-    // palette = [[0,0,0,0],[0,0,0,0]];
-    // palette = [];
-    // kMeansPalette(8);
-    // leastAvgPalette(8);
-    // disperatePalette(16);
-    // console.log(palette);
-
-    // normalize();
-
-    // myDither();
-
-    // floydSteinberg();
-
-    // quadTree(0.1);
-
-    // heirarchicalCluster(0.2, 0.8);
-    // console.log(clusters);
-    // colorClusters(slider.value);
-
-    // toGrayscale();
-    //
-    // // addWave();
-    // // addWave(45, 32, 2);
-    //
-    // fourier = ctx.createImageData(imgData.width, imgData.height);
-    // f_grayscale = new Array(w*h);
-    // f_grayscale.fill(0);
-    //
-    // // fromFourier();
-    // //
-    // // // addWave(45, 32, 15, f_grayscale);
-    // //
-    // // fromGrayscale(fourier.data, f_grayscale, false);
-    // // ctx.putImageData(fourier, 0, 0);
-    //
-    // // fromFourierLoop();
-    // // fromGrayscale();
-    // toFourierLoop();
-
-    // toPixels();
-
-    // sortPixels();
-    // sortCols();
-    // sortRows();
-
-    // justAlpha();
-    // heavyColor();
-
-    // fromPixels();
-
-    // drawLoop();
-
-    // floydSteinberg();
-    // ctx.putImageData(imgData, 0, 0);
-
-    // console.log(data);
-
-    // w = cvs.width = 480;
-    // h = cvs.height = 480;
-
-    // circlesLoop();
-
-    // randomizePath(3);
-    // scalePath(1.5);
-    // translatePath(-.2, -.3)
-    // linearizePath(0);
-    // epicycles();
 }
 
 function scalePath(factor, path=_path) {
@@ -454,16 +305,6 @@ function init() {
     window.addEventListener("resize", resizeCvs)
 
     main()
-
-    // bg = new Image(cvs.width - 2*marginX, cvs.height - 2*marginY);
-    // bg.src = '../Signature.png';
-
-    // bg.onload = function() {
-    //     w = cvs.width;
-    //     h = cvs.height;
-    //     // ctx.drawImage(bg, marginX, marginY, bg.width, bg.height);
-    //     main();
-    // }
 }
 
 function resizeCvs() {
