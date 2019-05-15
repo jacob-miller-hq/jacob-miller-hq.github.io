@@ -2,6 +2,90 @@ body {
   margin: 0px;
   padding: 0px;
   border: 0px;
+  background-color: #333;
+  overflow: auto;
+}
+
+div#content {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 100%;
+}
+
+div#toolbox {
+  float: left;
+  padding: 8px 0px;
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  max-width: 216px;
+  margin-left: 8px;
+  margin-top: 8px;
+}
+
+input.tool {
+  margin: 4px;
+  border: 3px solid #aaa;
+  width: 100px;
+  height: 100px;
+  border-radius: 16px;
+  float: left;
+}
+
+div#canvas {
+  display:block;
+  position: absolute;
+  height: auto;
+  top: 4px;
+  left: 232px;
+  right: 232px;
+  bottom: 4px;
+  background-color: grey;
+}
+
+canvas#canvas {
+  margin: 0;
+  position: relative;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+div#options {
+  display: block;
+  position: absolute;
+  padding: 8px 0px;
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  width: 216px;
+  max-width: 216px;
+  right: 8px;
+  top: 8px;
+  bottom: 236px;
+}
+
+div#palette {
+  display: block;
+  position: absolute;
+  padding: 2px 0px;
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  width: 216px;
+  max-width: 216px;
+  height: 216px;
+  right: 8px;
+  bottom: 8px;
+}
+
+.swatch {
+  float:left;
+  width:32px;
+  height:32px;
+  margin:2px;
+  border-radius: 4px;
 }
 
 div#modal {
@@ -25,8 +109,4 @@ div#modal-content {
   border: 1px solid #888;
   width: 50%;
   text-align: center;
-}
-
-div#upload-form {
-  margin: 32px;
 }

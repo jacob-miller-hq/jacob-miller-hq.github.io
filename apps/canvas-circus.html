@@ -37,7 +37,7 @@
 </head>
 
 <body>
-  <div id="modal">
+  <div id="modal" style="display:none;">
     <div id="modal-content">
         <form action="javascript:uploadImage()">
           <input type="file" name="pic" accept="image/*">
@@ -46,9 +46,29 @@
     </div>
   </div>
   <!-- <div class="anim"></div> -->
-  <div id="main">
+  <div id="content">
+    <div id="toolbox">
+      <input id="upload" class="tool" type="button" value="Upload" onclick="showUploadModal()" />
+      <a id="download" download="image.png">
+        <input id="save" class="tool" type="button" value="Save" onclick="saveCanvas()" />
+      </a>
+      <input id="quad-tree" class="tool" type="button" value="Quad Tree" onclick='apply("quadTree")' />
+      <input id="sort-pixels" class="tool" type="button" value="Sort Pixels" onclick='apply("sortPixels")' />
+      <input id="grayscale" class="tool" type="button" value="Grayscale" onclick='apply("grayscale")' />
+      <input id="heavy-color" class="tool" type="button" value="Heavy Color" onclick='apply("heavyColor")' />
+      <input id="dither" class="tool" type="button" value="Dither" onclick='apply("defaultDither")' />
+      <input id="debug" class="tool" type="button" value="Main" onclick='main()' />
+    </div>
     <img id="myImg" src="#" alt="original image" style="display:none"/>
-    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="canvas">
+      <canvas id="canvas" width="0px" height="0px"></canvas>
+    </div>
+    <div id="options">
+
+    </div>
+    <div id="palette">
+
+    </div>
   </div>
   <!-- <input type="range" id="slider" min="0" max="100" style="width:100%"/> -->
   <!-- <image src="bouquet.png" /> -->
