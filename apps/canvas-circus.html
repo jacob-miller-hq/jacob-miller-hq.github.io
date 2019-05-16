@@ -59,12 +59,22 @@
       <input id="dither" class="tool" type="button" value="Dither" onclick='apply("defaultDither")' />
       <input id="debug" class="tool" type="button" value="Main" onclick='main()' />
     </div>
+    <div id="history">
+      <input id="undo" class="hist" type="button" value="Undo" onclick="undo()" />
+      <input id="redo" class="hist" type="button" value="Redo" onclick="redo()" />
+    </div>
     <img id="myImg" src="#" alt="original image" style="display:none"/>
     <div id="canvas">
       <canvas id="canvas" width="0px" height="0px"></canvas>
     </div>
     <div id="options">
+      <template id="quad-tree-options">
 
+      </template>
+      <h1>Quad Tree</h1>
+      <p>Max Splits</p>
+      <input id="quad-tree-splits" type="number" min="0" value="100" />
+      <input id="apply" type="button" value="Apply" onclick="quadTreeApply()" />
     </div>
     <div id="palette">
 

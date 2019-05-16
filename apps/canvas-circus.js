@@ -1,6 +1,8 @@
+// global variables
 var cvs, ctx;
 var w, h;
 var imgData, data;
+// default palette
 var palette = [
   [0, 0, 0, 255],
   [255, 0, 0, 255],
@@ -11,17 +13,11 @@ var palette = [
   [255, 0, 255, 255],
   [255, 255, 255, 255],
   [0, 0, 0, 0]
-
-
-  // [0,     0,      0,      255],
-  // [255,   0,      0,      255],
-  // [0,     255,    0,      255],
-  // [0,     0,      255,    255],
-  // [255,   255,    255,    255],
-  // [0,     0,      0,      0]
 ]
 
 var slider;
+
+// utility functions
 
 Uint32Array.prototype.swap = function(x, y) {
   let b = this[x];
@@ -99,11 +95,6 @@ function toHex(v) {
 }
 
 function arrToStr(arr) {
-  // var val = new Uint32Array(1);
-  // val[0] = ((arr[0] & 0xff) << 24) + ((arr[1] & 0xff) << 16) +
-  //             ((arr[2] & 0xff) << 8) + (arr[3] & 0xff)
-  // return val[0].toString(16)
-
   return "#" + toHex(arr[0]) + toHex(arr[1]) + toHex(arr[2]) + toHex(arr[3])
 }
 
@@ -152,30 +143,44 @@ function getError(og, appr) {
   return [og[0] - appr[0], og[1] - appr[1], og[2] - appr[2], og[3] - appr[3]]
 }
 
-function floydSteinberg() {
-  if (typeof(Worker) === 'undefined') {
-    console.log("Workers not supported.");
-    return -1;
-  }
-  var worker = new Worker('floydSteinbergWorker.js');
-  worker.onmessage = function(e) {
-    if (e.data == 'term') {
-      console.log(e.data);
-      console.log(navigator.serviceWorker)
-      worker.terminate();
-      delete worker;
-      console.log(navigator.serviceWorker)
-      afterWorkers();
-      return;
-    }
-    imgData = e.data;
-    data = imgData.data;
+Number.prototype.clamp = function(min, max) {
+  return Math.min(Math.max(this, min), max);
+};
 
-    ctx.putImageData(imgData, 0, 0);
-  }
-
-  worker.postMessage([imgData, palette, w, h]);
+function toRadians(value) {
+  return value * Math.PI / 180;
 }
+
+/*
+ * convert to and from pixels
+ * pixels are just uints: AARRGGBB
+ * data is an array: [RR, GG, BB, AA]
+ */
+
+var pixels;
+
+function toPixels() {
+  pixels = new Uint32Array(w * h);
+  for (let p = 0; p < data.length / 4; p++) {
+    let i = p * 4
+    pixels[p] |= data[i + 3] << 24;
+    pixels[p] |= data[i] << 16;
+    pixels[p] |= data[i + 1] << 8;
+    pixels[p] |= data[i + 2];
+  }
+}
+
+function fromPixels() {
+  for (let p = 0; p < data.length / 4; p++) {
+    let i = 4 * p;
+    data[i] = (pixels[p] >> 16) & 0xff;
+    data[i + 1] = (pixels[p] >> 8) & 0xff;
+    data[i + 2] = (pixels[p]) & 0xff;
+    data[i + 3] = (pixels[p] >> 24) & 0xff;
+  }
+}
+
+// palette functions
 
 function kMeansPalette(k) {
   let newPalette = []; // centers
@@ -229,90 +234,6 @@ function kMeansPalette(k) {
   }
   // palette = newPalette;
   populatePalette()
-}
-
-function myDither() {
-  if (typeof(Worker) === 'undefined') {
-    console.log("Workers not supported.");
-    return -1;
-  }
-  let worker = new Worker('myDitherWorker.js');
-  worker.onmessage = function(e) {
-    imgData = e.data;
-    data = imgData.data;
-    // console.log('imgData.data', imgData.data, 'data', data, 'e.data.data', e.data.data);
-    ctx.putImageData(imgData, 0, 0);
-  }
-  // msg = JSON.parse(JSON.stringify({
-  //     data:Array.prototype.slice.call(data),
-  //     palette:palette,
-  //     w:w,
-  //     h:h,
-  // }));
-  // worker.postMessage(msg);
-  worker.postMessage([imgData, palette, w, h]);
-}
-
-function normalize() {
-  for (let it = 0; it < 10; it++) {
-    for (let x = 0; x < w; x++) {
-      var r = 0,
-        g = 0,
-        b = 0;
-      for (let y = 0; y < h; y++) {
-        // console.log('x', x, 'y', y);
-        let i = indecesOf(x, y);
-        // console.log('i', i, 'i.r', i.r, 'i.g', i.g, 'i.b', i.b, 'i.a', i.a);
-        // console.log('[', data[i.r], data[i.g], data[i.b], data[i.a], ']')
-
-        r += data[i.r];
-        g += data[i.g];
-        b += data[i.b];
-      }
-      r /= h;
-      g /= h;
-      b /= h;
-      let dR = 127 - r;
-      let dG = 127 - g;
-      let dB = 127 - b;
-
-      for (let y = 0; y < h; y++) {
-        let i = indecesOf(x, y);
-        data[i.r] += dR;
-        data[i.g] += dG;
-        data[i.b] += dB;
-      }
-    }
-    for (let y = 0; y < h; y++) {
-      var r = 0,
-        g = 0,
-        b = 0;
-      for (let x = 0; x < w; x++) {
-        // console.log('x', x, 'y', y);
-        let i = indecesOf(x, y);
-        // console.log('i', i, 'i.r', i.r, 'i.g', i.g, 'i.b', i.b, 'i.a', i.a);
-        // console.log('[', data[i.r], data[i.g], data[i.b], data[i.a], ']')
-
-        r += data[i.r];
-        g += data[i.g];
-        b += data[i.b];
-      }
-      r /= w;
-      g /= w;
-      b /= w;
-      let dR = 127 - r;
-      let dG = 127 - g;
-      let dB = 127 - b;
-
-      for (let x = 0; x < w; x++) {
-        let i = indecesOf(x, y);
-        data[i.r] += dR;
-        data[i.g] += dG;
-        data[i.b] += dB;
-      }
-    }
-  }
-  ctx.putImageData(imgData, 0, 0);
 }
 
 function leastAvgPalette(k) {
@@ -427,10 +348,195 @@ function disperatePalette(k) {
   populatePalette()
 }
 
-function r_quadTree(x1, y1, x2, y2, theta) {
+// filter/effect functions
+
+function defaultDither() {
+  palette = []
+  disperatePalette(8)
+  floydSteinberg()
+}
+
+function floydSteinberg() {
+  if (typeof(Worker) === 'undefined') {
+    console.log("Workers not supported.");
+    return -1;
+  }
+  var worker = new Worker('floydSteinbergWorker.js');
+  worker.onmessage = function(e) {
+    if (e.data == 'term') {
+      // console.log(e.data);
+      console.log(navigator.serviceWorker)
+      worker.terminate();
+      delete worker;
+      console.log(navigator.serviceWorker)
+      // afterWorkers();
+      return;
+    }
+    imgData = e.data;
+    data = imgData.data;
+
+    ctx.putImageData(imgData, 0, 0);
+    updateHist()
+  }
+
+  worker.postMessage([imgData, palette, w, h]);
+}
+
+function myDither() {
+  if (typeof(Worker) === 'undefined') {
+    console.log("Workers not supported.");
+    return -1;
+  }
+  let worker = new Worker('myDitherWorker.js');
+  worker.onmessage = function(e) {
+    imgData = e.data;
+    data = imgData.data;
+    // console.log('imgData.data', imgData.data, 'data', data, 'e.data.data', e.data.data);
+    ctx.putImageData(imgData, 0, 0);
+  }
+  // msg = JSON.parse(JSON.stringify({
+  //     data:Array.prototype.slice.call(data),
+  //     palette:palette,
+  //     w:w,
+  //     h:h,
+  // }));
+  // worker.postMessage(msg);
+  worker.postMessage([imgData, palette, w, h]);
+}
+
+function normalize() {
+  for (let it = 0; it < 10; it++) {
+    for (let x = 0; x < w; x++) {
+      var r = 0,
+        g = 0,
+        b = 0;
+      for (let y = 0; y < h; y++) {
+        // console.log('x', x, 'y', y);
+        let i = indecesOf(x, y);
+        // console.log('i', i, 'i.r', i.r, 'i.g', i.g, 'i.b', i.b, 'i.a', i.a);
+        // console.log('[', data[i.r], data[i.g], data[i.b], data[i.a], ']')
+
+        r += data[i.r];
+        g += data[i.g];
+        b += data[i.b];
+      }
+      r /= h;
+      g /= h;
+      b /= h;
+      let dR = 127 - r;
+      let dG = 127 - g;
+      let dB = 127 - b;
+
+      for (let y = 0; y < h; y++) {
+        let i = indecesOf(x, y);
+        data[i.r] += dR;
+        data[i.g] += dG;
+        data[i.b] += dB;
+      }
+    }
+    for (let y = 0; y < h; y++) {
+      var r = 0,
+        g = 0,
+        b = 0;
+      for (let x = 0; x < w; x++) {
+        // console.log('x', x, 'y', y);
+        let i = indecesOf(x, y);
+        // console.log('i', i, 'i.r', i.r, 'i.g', i.g, 'i.b', i.b, 'i.a', i.a);
+        // console.log('[', data[i.r], data[i.g], data[i.b], data[i.a], ']')
+
+        r += data[i.r];
+        g += data[i.g];
+        b += data[i.b];
+      }
+      r /= w;
+      g /= w;
+      b /= w;
+      let dR = 127 - r;
+      let dG = 127 - g;
+      let dB = 127 - b;
+
+      for (let x = 0; x < w; x++) {
+        let i = indecesOf(x, y);
+        data[i.r] += dR;
+        data[i.g] += dG;
+        data[i.b] += dB;
+      }
+    }
+  }
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function heavyColor() {
+  toPixels()
+  for (let p = 0; p < pixels.length; p++) {
+    pixels[p] &= 0xffc0c0c0
+  }
+  fromPixels()
+}
+
+function justAlpha() {
+  for (let p = 0; p < pixels.length; p++) {
+    pixels[p] &= 0xff000000
+  }
+}
+
+// Breadth-first quad tree
+quadQueue = []
+
+function quadTree(shouldSplit=quadCount(1000)) {
+  quadQueue.push(function() {r_quadTree(0, 0, w, h, shouldSplit)})
+  while(quadQueue.length > 0) {
+    idx = Math.floor(Math.random() * quadQueue.length)
+    quadQueue.swap(0, idx)
+    let task = quadQueue[0]
+    quadQueue = quadQueue.slice(1)
+    // console.log(task)
+    task()
+  }
+}
+
+function percChance(perc) {
+  return Math.random() < (perc / 100)
+}
+
+function quadPercChance(perc) {
+  return function(x1, y1, x2, y2, avg) {
+    return percChance(perc)
+  }
+}
+
+quadCt = 0
+
+function quadCount(count) {
+  quadCt = 0;
+  return function(x1, y1, x2, y2, avg) {
+    if(quadCt < count) {
+      quadCt++
+      return true
+    }
+    return false
+  }
+}
+
+function quadStdDev(theta) {
+  return function(x1, y1, x2, y2, avg) {
+    // - calculate average distance to each pixel
+    let avgDist = 0;
+    for (let x = x1; x < x2; x++) {
+      for (let y = y1; y < y2; y++) {
+        let arr = arrayAt(x, y);
+        avgDist += colorDiff(arr, avg); // might want sqrt here?
+      }
+    }
+    avgDist /= count;
+    return avgDist > theta
+  }
+}
+
+function r_quadTree(x1, y1, x2, y2, shouldSplit) {
   // console.log('(', x1, y1, ')', '(', x2, y2, ')');
   if (x1 == x2 && y1 == y2) {
-    console.log('leaf reached');
+    // console.log('leaf reached');
     return;
   }
   if (x1 > x2 || y1 > y2 || x1 < 0 || y1 < 0 || x2 > w || y2 > h) {
@@ -438,8 +544,8 @@ function r_quadTree(x1, y1, x2, y2, theta) {
     console.log(x1, y1, x2, y2);
     return -1;
   }
-  // check is should split
-  // - get average
+
+  // get average color
   let avg = [0, 0, 0, 0];
   let count = 0;
   for (let x = x1; x < x2; x++) {
@@ -454,52 +560,36 @@ function r_quadTree(x1, y1, x2, y2, theta) {
   for (let z = 0; z < 4; z++) {
     avg[z] /= count;
   }
-  // - calculate average distance to each pixel
-  let avgDist = 0;
-  for (let x = x1; x < x2; x++) {
-    for (let y = y1; y < y2; y++) {
-      let arr = arrayAt(x, y);
-      avgDist += colorDiff(arr, avg); // might want sqrt here?
-    }
-  }
-  avgDist /= count;
-  // - compare to arbitrary threshold
-  if (avgDist > theta) {
+
+  // check if should split
+  if (shouldSplit(x1, y1, x2, y2, avg)) {
     // console.log('split!');
     // split
     let midX = Math.floor((x1 + x2) / 2);
     let midY = Math.floor((y1 + y2) / 2);
+
     // recurse on 4 quadrants
-    r_quadTree(x1, y1, midX, midY, theta);
-    r_quadTree(midX, y1, x2, midY, theta);
-    r_quadTree(x1, midY, midX, y2, theta);
-    r_quadTree(midX, midY, x2, y2, theta);
+    quadQueue.push(function() {r_quadTree(x1, y1, midX, midY, shouldSplit)})
+    quadQueue.push(function() {r_quadTree(midX, y1, x2, midY, shouldSplit)})
+    quadQueue.push(function() {r_quadTree(x1, midY, midX, y2, shouldSplit)})
+    quadQueue.push(function() {r_quadTree(midX, midY, x2, y2, shouldSplit)})
   } else {
-    // console.log('consolidate');
     // set all pixels to average
     for (let x = x1; x < x2; x++) {
       for (let y = y1; y < y2; y++) {
-        let p = closestPaletteIndex(avg);
         let i = indecesOf(x, y);
 
         data[i.r] = avg[0];
         data[i.g] = avg[1];
         data[i.b] = avg[2];
         data[i.a] = avg[3];
-
-        // data[i.r] = palette[p][0];
-        // data[i.g] = palette[p][1];
-        // data[i.b] = palette[p][2];
-        // data[i.a] = palette[p][3];
       }
     }
   }
   ctx.putImageData(imgData, 0, 0);
 }
 
-function quadTree(theta = 0.1) {
-  r_quadTree(0, 0, w, h, theta);
-}
+// clustering stuff
 
 /* cluster:
  * - x, y
@@ -629,21 +719,9 @@ function colorClusters(theta = 2, C = clusters) {
   ctx.putImageData(imgData, 0, 0);
 }
 
-function sortAtPixel(p, arr = pixels, alpha = 1, mask = 0xffffffff) {
-  // let shouldSwap = (0xff & arr[p]) < (0xff & arr[p-1]);
-  let values = new Uint32Array(2);
-  values[0] = arr[p] & mask;
-  values[1] = arr[p - 1] & mask;
-  while (p > 0 && Math.random() < alpha && values[0] < values[1]) {
-    // console.log(arr[p].toString(16), arr[p-1].toString(16));
-    arr.swap(p, p - 1);
-    p--;
-    values[0] = arr[p] & mask;
-    values[1] = arr[p - 1] & mask;
-  }
-}
+// pixel sorting
 
-// non-stable sort
+// non-stable quick sort
 function quickSortPixels(lo, hi, mask = 0xffffffff) {
   if (lo >= hi) {
     // console.log("lo >= hi")
@@ -683,18 +761,13 @@ function quickSortPixels(lo, hi, mask = 0xffffffff) {
 
 function sortPixels() {
   console.log('Sorting pixels');
-  // for(let p = 0; p < pixels.length; p++) {
-  //     if(p % 1000 == 0) {
-  //         console.log(p + " / " + pixels.length);
-  //     }
-  //     sortAtPixel(p);
-  // }
   toPixels()
   quickSortPixels(0, pixels.length);
   fromPixels()
   console.log('complete')
 }
 
+// TODO: make these use quickSortPixels
 function sortRows(strength = 1) {
   for (let y = 0; y < h; y++) {
     arr = pixels.slice(y * w, (y + 1) * w);
@@ -783,11 +856,30 @@ function sortOtherDiagonal(strength = 1) {
   }
 }
 
-Number.prototype.clamp = function(min, max) {
-  return Math.min(Math.max(this, min), max);
-};
+// grayscale
 
 var graydata;
+
+function gammaExpand(value) {
+  if (value > 0.04045) {
+    return Math.pow((value + 0.055) / 1.055, 2.4);
+  } else {
+    return value / 12.92;
+  }
+}
+
+function gammaCompress(value) {
+  if (value > 0.0031308) {
+    return 1.055 * Math.pow(value, 1 / 2.4) - 0.055;
+  } else {
+    return 12.92 * value;
+  }
+}
+
+function grayscale() {
+  toGrayscale();
+  fromGrayscale();
+}
 
 function toGrayscale() {
   // console.log(w + " " + h + " " + w*h)
@@ -814,62 +906,7 @@ function fromGrayscale(dest = data, src = graydata, alpha = true) {
   }
 }
 
-function gammaExpand(value) {
-  if (value > 0.04045) {
-    return Math.pow((value + 0.055) / 1.055, 2.4);
-  } else {
-    return value / 12.92;
-  }
-}
-
-function gammaCompress(value) {
-  if (value > 0.0031308) {
-    return 1.055 * Math.pow(value, 1 / 2.4) - 0.055;
-  } else {
-    return 12.92 * value;
-  }
-}
-
-var pixels;
-
-function toPixels() {
-  pixels = new Uint32Array(w * h);
-  for (let p = 0; p < data.length / 4; p++) {
-    let i = p * 4
-    pixels[p] |= data[i + 3] << 24;
-    pixels[p] |= data[i] << 16;
-    pixels[p] |= data[i + 1] << 8;
-    pixels[p] |= data[i + 2];
-  }
-}
-
-function fromPixels() {
-  for (let p = 0; p < data.length / 4; p++) {
-    let i = 4 * p;
-    data[i] = (pixels[p] >> 16) & 0xff;
-    data[i + 1] = (pixels[p] >> 8) & 0xff;
-    data[i + 2] = (pixels[p]) & 0xff;
-    data[i + 3] = (pixels[p] >> 24) & 0xff;
-  }
-}
-
-function heavyColor() {
-  toPixels()
-  for (let p = 0; p < pixels.length; p++) {
-    pixels[p] &= 0xffc0c0c0
-  }
-  fromPixels()
-}
-
-function justAlpha() {
-  for (let p = 0; p < pixels.length; p++) {
-    pixels[p] &= 0xff000000
-  }
-}
-
-function toRadians(value) {
-  return value * Math.PI / 180;
-}
+// some fourier stuff
 
 function addWave(theta = 0, amp = 64, lambda = 15, arr = graydata) {
   for (let x = 0; x < w; x++) {
@@ -897,31 +934,54 @@ function matchWave(theta = 0, lambda = 15, arr = graydata) {
   return strength / w / h;
 }
 
-// function mag(x, y) {
-//     return Math.sqrt(x*x + y*y);
-// }
-//
-// function ang(x, y) {
-//     return Math.atan2(y, x)/2/Math.PI;
-// }
-
-function grayscale() {
-  toGrayscale();
-  fromGrayscale();
-}
-
-function defaultDither() {
-  palette = []
-  disperatePalette(8)
-  floydSteinberg()
-}
+// apply a given function
+// TODO: make sure theres no doubling in history (update history in specific functions)
 
 function apply(name) {
   imgData = ctx.getImageData(0, 0, w, h);
   data = imgData.data;
   console.log(name)
   window[name]();
+  updateHist()
   ctx.putImageData(imgData, 0, 0);
+  console.log("complete.")
+}
+
+function quadTreeApply() {
+  imgData = ctx.getImageData(0, 0, w, h)
+  data = imgData.data;
+  splits = Number(document.getElementById("quad-tree-splits").value)
+  shouldSplit = quadCount(splits)
+  quadTree(shouldSplit)
+  updateHist()
+  ctx.putImageData(imgData, 0, 0)
+}
+
+// history (undo, redo)
+// TODO: put cap on history
+hist = []
+histPos = -1
+
+function undo() {
+  if(histPos > 0) {
+    histPos--
+  }
+  imgData.data.set(hist[histPos])
+  ctx.putImageData(imgData, 0, 0)
+}
+
+function redo() {
+  if(histPos < hist.length-1) {
+    histPos++
+  }
+  imgData.data.set(hist[histPos])
+  ctx.putImageData(imgData, 0, 0)
+}
+
+function updateHist() {
+  hist = hist.slice(0, histPos+1)
+  hist.push(data.slice(0))
+  histPos++
 }
 
 function main() {
@@ -1014,72 +1074,6 @@ function main() {
   console.log("complete.")
 }
 
-function randomizePath(numPoints) {
-  _path = []
-  for (let i = 0; i < numPoints; i++) {
-    // let mag = (Math.random() * w/2);
-    // _path.push(mag * Math.cos(i/numPoints * 2*Math.PI));
-    // _path.push(mag * Math.sin(i/numPoints * 2*Math.PI));
-
-    _path.push(Math.random() * w - w / 2);
-    _path.push(Math.random() * h - h / 2);
-  }
-}
-
-function linearizePath(pointsPer) {
-  for (let i = 0; i < _path.length; i += 2) {
-    let x1 = _path[i];
-    let y1 = _path[i + 1];
-    let x2 = _path[i + 2];
-    let y2 = _path[i + 3];
-    if (isNaN(x2) || isNaN(y2)) {
-      x2 = _path[0];
-      y2 = _path[1];
-    }
-    for (let j = 0; j < pointsPer; j++) {
-      let x = x1 * (1 - (j + 1) / (pointsPer + 1)) + x2 * ((j + 1) / (pointsPer + 1));
-      let y = y1 * (1 - (j + 1) / (pointsPer + 1)) + y2 * ((j + 1) / (pointsPer + 1));
-      _path.splice(i + 2, 0, x, y);
-      i += 2;
-    }
-  }
-}
-
-function epicycles(deg = null, path = _path) {
-  if (deg == null) {
-    deg = path.length / 4;
-  }
-  complex = getComplexFromPath(deg, path);
-  circles = getCirclesFromComplex(complex);
-  sortCircles();
-  circlesLoop();
-}
-
-function afterWorkers() {
-  // toGrayscale();
-  // fromGrayscale();
-  toPixels();
-  // drawLoop();
-}
-
-var count = 0;
-
-function drawLoop() {
-  toPixels();
-  // sortRows(Math.tanh(count/160));
-  // sortCols(Math.tanh(count/160));
-  sortDiagonal(Math.tanh(count / 80));
-  sortOtherDiagonal(Math.tanh(count / 80));
-  fromPixels();
-
-  ctx.putImageData(imgData, 0, 0);
-
-  if (true || count < 35) {
-    window.requestAnimationFrame(drawLoop);
-  }
-  count++;
-}
-
 var canvasDiv
 
 function init() {
@@ -1157,6 +1151,12 @@ function imageIsLoaded(e) {
   // w = cvs.width = img.width;
   // h = cvs.height = img.height;
   ctx.drawImage(img, 0, 0, w, h);
+  imgData = ctx.getImageData(0, 0, w, h)
+  data = imgData.data
+  // reset history
+  hist = []
+  histPos = -1
+  updateHist()
   // document.querySelector('div#content') = "block"
   // main();
 }
