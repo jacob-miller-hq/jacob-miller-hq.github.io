@@ -350,6 +350,29 @@ function disperatePalette(k) {
 
 // filter/effect functions
 
+// for worker rendering: https://developers.google.com/web/updates/2018/08/offscreen-canvas
+
+function testWorker() {
+  if (typeof(Worker) === 'undefined') {
+    conole.log("Workers not supported.");
+    return -1;
+  }
+  var worker = new Worker('testWorker.js')
+  worker.onmessage = function(msg) {
+    if (msg.data == 'term') {
+      worker.terminate()
+      delete dummyCvs
+      delete worker
+      return
+    }
+    imgData = msg.data.imgData
+    ctx.putImageData(imgData, 0, 0)
+    updateHist()
+  }
+
+  worker.postMessage({imgData, w, h})
+}
+
 function defaultDither() {
   palette = []
   disperatePalette(8)
@@ -365,10 +388,10 @@ function floydSteinberg() {
   worker.onmessage = function(e) {
     if (e.data == 'term') {
       // console.log(e.data);
-      console.log(navigator.serviceWorker)
+      // console.log(navigator.serviceWorker)
       worker.terminate();
       delete worker;
-      console.log(navigator.serviceWorker)
+      // console.log(navigator.serviceWorker)
       // afterWorkers();
       return;
     }
@@ -985,9 +1008,11 @@ function updateHist() {
 }
 
 function main() {
-  imgData = ctx.getImageData(0, 0, w, h);
-  data = imgData.data;
+  // imgData = ctx.getImageData(0, 0, w, h);
+  // data = imgData.data;
   // console.log(data);
+
+  testWorker();
 
   // palette.push(rgbToArr(0x31E9BB));
   // palette.push(rgbToArr(0x4BF058));
@@ -1002,16 +1027,16 @@ function main() {
   //     palette.push(rgbaToArr(Math.floor(Math.random() * 0xffffffff)));
   // }
 
-  palette = [
-    [0, 0, 0, 255],
-    [255, 255, 255, 255]
-  ];
+  // palette = [
+  //   [0, 0, 0, 255],
+  //   [255, 255, 255, 255]
+  // ];
   // palette = [];
   // kMeansPalette(8);
   // leastAvgPalette(8);
   // disperatePalette(8);
   // console.log(palette);
-  populatePalette()
+  // populatePalette()
 
   // normalize();
 
@@ -1059,7 +1084,7 @@ function main() {
   // drawLoop();
 
   // floydSteinberg();
-  ctx.putImageData(imgData, 0, 0);
+  // ctx.putImageData(imgData, 0, 0);
 
   // console.log(data);
 
@@ -1071,26 +1096,20 @@ function main() {
   // randomizePath(3);
   // linearizePath(1);
   // epicycles();
-  console.log("complete.")
+  // console.log("complete.")
 }
 
-var canvasDiv
+var canvasDiv, img
+var ocvs
 
 function init() {
   console.log("loaded.");
 
   canvasDiv = document.querySelector('div#canvas')
 
-  cvs = document.querySelector('canvas#canvas')
-  ctx = cvs.getContext('2d');
-
-  // slider = document.getElementById("slider");
-  //
-  // if(slider) {
-  //     slider.oninput = function() {
-  //         colorClusters(this.value);
-  //     }
-  // }
+  img = document.querySelector('img'); // $('img')[0]
+  img.src = "../blotch-bouquet.png"; // set src to file url
+  img.onload = imageIsLoaded; // optional onload event listener
 
   modal = document.querySelector('div#modal')
 
@@ -1110,12 +1129,10 @@ function init() {
 
 window.onload = init
 
-var img
-
 window.addEventListener('submit', function() {
   document.querySelector('input[type="file"]').addEventListener('change', function() {
     if (this.files && this.files[0]) {
-      var img = document.querySelector('img'); // $('img')[0]
+      img = document.querySelector('img'); // $('img')[0]
       img.src = URL.createObjectURL(this.files[0]); // set src to file url
       img.onload = imageIsLoaded; // optional onload event listener
     }
@@ -1144,21 +1161,29 @@ function imageIsLoaded(e) {
   if (img.height * factor > h) {
     factor = h / img.height
   }
-  console.log(factor)
+  // create a canvas of the proper width and height
+  if(cvs != null) {
+    canvasDiv.removeChild(cvs)
+    delete cvs
+  }
+  cvs = document.createElement("canvas")
+  cvs.id = "canvas"
+  canvasDiv.appendChild(cvs)
   w = cvs.width = Math.floor(img.width * factor)
   h = cvs.height = Math.floor(img.height * factor)
-  console.log(w + " " + h)
-  // w = cvs.width = img.width;
-  // h = cvs.height = img.height;
+
+  // console.log(w + " " + h)
+  // transfer control to offscreen
+  ctx = cvs.getContext("2d")
+
   ctx.drawImage(img, 0, 0, w, h);
   imgData = ctx.getImageData(0, 0, w, h)
   data = imgData.data
   // reset history
   hist = []
   histPos = -1
-  updateHist()
-  // document.querySelector('div#content') = "block"
-  // main();
+  updateHist
+  // updateHist()
 }
 
 function uploadImage() {
