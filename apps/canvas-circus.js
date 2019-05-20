@@ -350,27 +350,48 @@ function disperatePalette(k) {
 
 // filter/effect functions
 
-// for worker rendering: https://developers.google.com/web/updates/2018/08/offscreen-canvas
+var workerRunning = false
+
+function checkProgress(worker) {
+  if(!workerRunning) {
+    return
+  }
+  // console.log("checking progress...")
+  worker.postMessage("prog")
+  setTimeout(function() { checkProgress(worker) }, 1000 / 60)
+}
 
 function testWorker() {
   if (typeof(Worker) === 'undefined') {
     conole.log("Workers not supported.");
     return -1;
   }
+  // not actually thread safe, but should minimize visible problems
+  if (workerRunning) {
+    console.log("Worker already running.")
+    return -2;
+  } else {
+    workerRunning = true
+  }
   var worker = new Worker('testWorker.js')
   worker.onmessage = function(msg) {
     if (msg.data == 'term') {
       worker.terminate()
-      delete dummyCvs
       delete worker
+      workerRunning = false
+      updateHist()
       return
     }
-    imgData = msg.data.imgData
+    if (msg.data.tag == "prog") {
+      console.log(Math.floor(msg.data.perc))
+      return
+    }
+    imgData = msg.data
     ctx.putImageData(imgData, 0, 0)
-    updateHist()
   }
 
   worker.postMessage({imgData, w, h})
+  checkProgress(worker)
 }
 
 function defaultDither() {
@@ -384,25 +405,31 @@ function floydSteinberg() {
     console.log("Workers not supported.");
     return -1;
   }
+  // not actually thread safe, but should minimize visible problems
+  if (workerRunning) {
+    console.log("Worker already running.")
+    return -2;
+  } else {
+    workerRunning = true
+  }
   var worker = new Worker('floydSteinbergWorker.js');
-  worker.onmessage = function(e) {
-    if (e.data == 'term') {
-      // console.log(e.data);
-      // console.log(navigator.serviceWorker)
+  worker.onmessage = function(msg) {
+    if (msg.data == 'term') {
       worker.terminate();
       delete worker;
-      // console.log(navigator.serviceWorker)
-      // afterWorkers();
+      workerRunning = false
+      updateHist()
       return;
     }
-    imgData = e.data;
-    data = imgData.data;
-
+    if (msg.data.tag == "prog") {
+      console.log(Math.floor(msg.data.perc))
+      return
+    }
+    imgData = msg.data;
     ctx.putImageData(imgData, 0, 0);
-    updateHist()
   }
-
-  worker.postMessage([imgData, palette, w, h]);
+  worker.postMessage({imgData, palette, w, h});
+  checkProgress(worker)
 }
 
 function myDither() {
@@ -411,10 +438,10 @@ function myDither() {
     return -1;
   }
   let worker = new Worker('myDitherWorker.js');
-  worker.onmessage = function(e) {
-    imgData = e.data;
+  worker.onmessage = function(msg) {
+    imgData = msg.data;
     data = imgData.data;
-    // console.log('imgData.data', imgData.data, 'data', data, 'e.data.data', e.data.data);
+    // console.log('imgData.data', imgData.data, 'data', data, 'msg.data.data', msg.data.data);
     ctx.putImageData(imgData, 0, 0);
   }
   // msg = JSON.parse(JSON.stringify({
@@ -1003,7 +1030,7 @@ function redo() {
 
 function updateHist() {
   hist = hist.slice(0, histPos+1)
-  hist.push(data.slice(0))
+  hist.push(imgData.data.slice(0))
   histPos++
 }
 
