@@ -67,6 +67,7 @@ function w_floydSteinberg() {
       let i = indecesOf(x, y);
       let arr = arrayAt(x, y);
       let p = closestPaletteIndex(arr);
+      
       data[i.r] = palette[p][0];
       data[i.g] = palette[p][1];
       data[i.b] = palette[p][2];

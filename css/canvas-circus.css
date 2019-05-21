@@ -101,6 +101,7 @@ div#options {
   border-radius: 4px;
   width: 200px;
   max-width: 200px;
+  min-height: 400px;
   right: 8px;
   top: 8px;
   bottom: 236px;
@@ -155,6 +156,7 @@ input[type=range] {
 div#palette {
   display: block;
   position: absolute;
+  z-index: -1;
   padding: 2px 0px;
   background-color: #999;
   border: 2px solid #ddd;

@@ -194,7 +194,7 @@ function kMeansPalette(k) {
   let count = 0;
   while (changed && count < 10 * k) {
     changed = false;
-    console.log(JSON.stringify(newPalette));
+    // console.log(JSON.stringify(newPalette));
     for (let x = 0; x < w; x++) {
       for (let y = 0; y < h; y++) {
         let arr = arrayAt(x, y);
@@ -353,27 +353,30 @@ function disperatePalette(k) {
 var workerRunning = false
 
 function checkProgress(worker) {
-  if(!workerRunning) {
+  if (!workerRunning) {
     return
   }
   // console.log("checking progress...")
   worker.postMessage("prog")
-  setTimeout(function() { checkProgress(worker) }, 1000 / 60)
+  setTimeout(function() {
+    checkProgress(worker)
+  }, 1000 / 60)
 }
 
-function testWorker() {
-  if (typeof(Worker) === 'undefined') {
-    conole.log("Workers not supported.");
-    return -1;
+function polyWorker(initMsg) {
+  if (!Worker) {
+    console.log("Workers not supported.")
+    return -1
   }
   // not actually thread safe, but should minimize visible problems
   if (workerRunning) {
     console.log("Worker already running.")
-    return -2;
+    return -2
   } else {
     workerRunning = true
   }
-  var worker = new Worker('testWorker.js')
+
+  var worker = new Worker('poly-worker.js')
   worker.onmessage = function(msg) {
     if (msg.data == 'term') {
       worker.terminate()
@@ -383,15 +386,20 @@ function testWorker() {
       return
     }
     if (msg.data.tag == "prog") {
-      console.log(Math.floor(msg.data.perc))
+      // console.log(Math.floor(msg.data.perc))
+      console.log(msg.data.perc)
       return
     }
     imgData = msg.data
     ctx.putImageData(imgData, 0, 0)
   }
 
-  worker.postMessage({imgData, w, h})
+  worker.postMessage(initMsg)
   checkProgress(worker)
+}
+
+function testWorker() {
+  polyWorker({imgData, w, h, filter: "test"})
 }
 
 function defaultDither() {
@@ -401,35 +409,7 @@ function defaultDither() {
 }
 
 function floydSteinberg() {
-  if (typeof(Worker) === 'undefined') {
-    console.log("Workers not supported.");
-    return -1;
-  }
-  // not actually thread safe, but should minimize visible problems
-  if (workerRunning) {
-    console.log("Worker already running.")
-    return -2;
-  } else {
-    workerRunning = true
-  }
-  var worker = new Worker('floydSteinbergWorker.js');
-  worker.onmessage = function(msg) {
-    if (msg.data == 'term') {
-      worker.terminate();
-      delete worker;
-      workerRunning = false
-      updateHist()
-      return;
-    }
-    if (msg.data.tag == "prog") {
-      console.log(Math.floor(msg.data.perc))
-      return
-    }
-    imgData = msg.data;
-    ctx.putImageData(imgData, 0, 0);
-  }
-  worker.postMessage({imgData, palette, w, h});
-  checkProgress(worker)
+  polyWorker({imgData, w, h, palette, filter: "fs"})
 }
 
 function myDither() {
@@ -530,12 +510,20 @@ function justAlpha() {
   }
 }
 
+function w_quadTree() {
+  // tempCvs = document.createElement("canvas")
+  // ocvs = tempCvs.transferControlToOffscreen()
+  polyWorker({imgData, w, h, maxSplits:1000000, filter:"qt"})
+}
+
 // Breadth-first quad tree
 quadQueue = []
 
-function quadTree(shouldSplit=quadCount(1000)) {
-  quadQueue.push(function() {r_quadTree(0, 0, w, h, shouldSplit)})
-  while(quadQueue.length > 0) {
+function quadTree(shouldSplit = quadCount(1000)) {
+  quadQueue.push(function() {
+    r_quadTree(0, 0, w, h, shouldSplit)
+  })
+  while (quadQueue.length > 0) {
     idx = Math.floor(Math.random() * quadQueue.length)
     quadQueue.swap(0, idx)
     let task = quadQueue[0]
@@ -560,7 +548,7 @@ quadCt = 0
 function quadCount(count) {
   quadCt = 0;
   return function(x1, y1, x2, y2, avg) {
-    if(quadCt < count) {
+    if (quadCt < count) {
       quadCt++
       return true
     }
@@ -619,10 +607,18 @@ function r_quadTree(x1, y1, x2, y2, shouldSplit) {
     let midY = Math.floor((y1 + y2) / 2);
 
     // recurse on 4 quadrants
-    quadQueue.push(function() {r_quadTree(x1, y1, midX, midY, shouldSplit)})
-    quadQueue.push(function() {r_quadTree(midX, y1, x2, midY, shouldSplit)})
-    quadQueue.push(function() {r_quadTree(x1, midY, midX, y2, shouldSplit)})
-    quadQueue.push(function() {r_quadTree(midX, midY, x2, y2, shouldSplit)})
+    quadQueue.push(function() {
+      r_quadTree(x1, y1, midX, midY, shouldSplit)
+    })
+    quadQueue.push(function() {
+      r_quadTree(midX, y1, x2, midY, shouldSplit)
+    })
+    quadQueue.push(function() {
+      r_quadTree(x1, midY, midX, y2, shouldSplit)
+    })
+    quadQueue.push(function() {
+      r_quadTree(midX, midY, x2, y2, shouldSplit)
+    })
   } else {
     // set all pixels to average
     for (let x = x1; x < x2; x++) {
@@ -1013,7 +1009,7 @@ hist = []
 histPos = -1
 
 function undo() {
-  if(histPos > 0) {
+  if (histPos > 0) {
     histPos--
   }
   imgData.data.set(hist[histPos])
@@ -1021,7 +1017,7 @@ function undo() {
 }
 
 function redo() {
-  if(histPos < hist.length-1) {
+  if (histPos < hist.length - 1) {
     histPos++
   }
   imgData.data.set(hist[histPos])
@@ -1029,7 +1025,7 @@ function redo() {
 }
 
 function updateHist() {
-  hist = hist.slice(0, histPos+1)
+  hist = hist.slice(0, histPos + 1)
   hist.push(imgData.data.slice(0))
   histPos++
 }
@@ -1039,7 +1035,8 @@ function main() {
   // data = imgData.data;
   // console.log(data);
 
-  testWorker();
+  // testWorker()
+  w_quadTree()
 
   // palette.push(rgbToArr(0x31E9BB));
   // palette.push(rgbToArr(0x4BF058));
@@ -1149,9 +1146,6 @@ function init() {
   paletteDiv = document.querySelector("div#palette")
 
   populatePalette()
-
-  console.log(navigator.serviceWorker)
-  console.log(window.caches)
 }
 
 window.onload = init
@@ -1174,13 +1168,12 @@ function showUploadModal() {
 
 function imageIsLoaded(e) {
   modal.style.display = "none"
-  console.log(e);
   // w = canvasDiv.clientHeight
   // h = canvasDiv.clientHeight
   w = canvasDiv.offsetWidth
   h = canvasDiv.offsetHeight
-  console.log(w + " " + h)
-  console.log(img.width + " " + img.height)
+  // console.log(w + " " + h)
+  // console.log(img.width + " " + img.height)
   var factor = 1;
   if (img.width > w) {
     factor = w / img.width
@@ -1189,7 +1182,7 @@ function imageIsLoaded(e) {
     factor = h / img.height
   }
   // create a canvas of the proper width and height
-  if(cvs != null) {
+  if (cvs != null) {
     canvasDiv.removeChild(cvs)
     delete cvs
   }
@@ -1209,14 +1202,13 @@ function imageIsLoaded(e) {
   // reset history
   hist = []
   histPos = -1
-  updateHist
-  // updateHist()
+  updateHist()
 }
 
 function uploadImage() {
   files = document.querySelector('input[type="file"]').files
   if (files && files[0]) {
-    console.log("uploading image")
+    // console.log("uploading image")
     img = document.querySelector('img');
     img.src = URL.createObjectURL(files[0]);
     img.onload = imageIsLoaded;
@@ -1227,7 +1219,7 @@ function uploadImage() {
 }
 
 function saveCanvas() {
-  console.log("saving image")
+  // console.log("saving image")
   var download = document.getElementById("download")
   var image = cvs.toDataURL("image/png").replace("image/png", "image/octet-stream")
   download.setAttribute("href", image)
