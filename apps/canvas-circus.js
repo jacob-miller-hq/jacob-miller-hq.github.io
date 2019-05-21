@@ -363,6 +363,10 @@ function checkProgress(worker) {
   }, 1000 / 60)
 }
 
+// TODO: add alert at bottom: "Worker is running: 30% [###=======] cancel"
+// TODO: cancelling worker still adds to history, but stops progress
+// TODO: allow worker to continue?
+// TODO: prevent other functions while worker is running
 function polyWorker(initMsg) {
   if (!Worker) {
     console.log("Workers not supported.")
@@ -513,7 +517,7 @@ function justAlpha() {
 function w_quadTree() {
   // tempCvs = document.createElement("canvas")
   // ocvs = tempCvs.transferControlToOffscreen()
-  polyWorker({imgData, w, h, maxSplits:1000000, filter:"qt"})
+  polyWorker({imgData, w, h, maxSplits:(w + h) / 2, filter:"qt"})
 }
 
 // Breadth-first quad tree

@@ -169,7 +169,11 @@ function fsFilter(w, h, palette) {
 }
 
 // TODO allow for other splitting heuristics than random
-function qtFilter(w, h, maxSplits, ogImgData) {
+// ^ will mean changing perc() which is broken currently
+function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
+  let longDim = Math.max(w, h)
+  let pow2 = Math.pow(2, Math.ceil(Math.log2(longDim / leafSize)))
+  let maxGrowable = (4 * pow2 * pow2 - 1) / 3
   this.ctx = new OffscreenCanvas(w, h).getContext("2d")
   this.ctx.putImageData(ogImgData, 0, 0)
   this.splits = 0
@@ -179,7 +183,7 @@ function qtFilter(w, h, maxSplits, ogImgData) {
     x2: w,
     y2: h,
     grown: false,
-    split: false,
+    split: true,
     color: undefined,
     branches: []
   }
@@ -187,58 +191,80 @@ function qtFilter(w, h, maxSplits, ogImgData) {
   this.queue = [this.root]
   this.step = function() {
 
-    if (!this.root.grown) {
-      this.grow(this.root)
+    if(this.numGrown < maxGrowable - maxSplits && this.grow(this.root) == 0) {
       this.numGrown++
       return 0
     }
-    if (this.splits < maxSplits) {
-      if(this.split() == 0) {
-        this.splits++
-        // console.log(this.splits)
-        return 0
-      }
-      return -1
-    }
+    // if (!this.root.grown) {
+    //   this.grow(this.root)
+    //   this.numGrown++
+    //   return 0
+    // }
+    // if (this.splits < maxSplits) {
+    //   if(this.split() == 0) {
+    //     this.splits++
+    //     // console.log(this.splits)
+    //     return 0
+    //   }
+    //   return -1
+    // }
     return -1
+    // TODO: allow for editing after filter (maintain tree structure)
   }
-  let longDim = Math.max(w, h)
-  // let pow2 = Math.pow(2, Math.floor(Math.log2(longDim)))
-  let pow2 = longDim
-  let maxGrown = (4 * pow2 * pow2 - 1) / 3
   // TODO: make this work right
   this.perc = function() {
     // console.log(numGrown, this.splits, maxGrown, maxSplits)
-    return 100 * (numGrown + this.splits) / (maxGrown + Math.min(maxSplits, maxGrown))
+    return 100 * numGrown / Math.min(maxGrowable, maxGrowable - maxSplits)
   }
   this.grow = function(n) {
+
     if (n.grown) { // already grown
-      return
+      return -1
     }
     if (n.x2 - n.x1 <= 1 && n.y2 - n.y1 <= 1) { // is a leaf
-      n.color = arrayAt(n.x1, n.y1, w, data)
+      n.color = arrayAt(n.x1, n.y1, w, ogImgData.data)
+      n.split = false
       n.grown = true
-      return
+      return 1
+    }
+    if (leafSize > 1 && n.x2 - n.x1 <= leafSize && n.y2 - n.y1 <= leafSize) {
+      colors = []
+      for(let x = n.x1; x < n.x2; x++) {
+        for(let y = n.y1; y < n.y2; y++) {
+          colors.push(arrayAt(x, y, w, ogImgData.data))
+        }
+      }
+      // console.log(colors.map(c => cToRgbaStr(c)))
+      n.color = avgColor(colors)
+      // console.log(n.color)
+      n.split = false
+      n.grown = true
+      this.drawNode(this.ctx, n)
+      return 0
     }
     if (n.branches.length == 0) { // doesn't have branches yet
       n.branches = this.genBranches(n.x1, n.y1, n.x2, n.y2)
+      drawNode(this.ctx, n) // takes a long time, but a cool visual
     }
-    for (let b = 0; b < n.branches.length; b++) {
-      if (!n.branches[b].grown) { // grow a branch
-        grow(n.branches[b], data)
-        return
+    // randomly select ungrown child
+    // TODO: something might be wrong with this?
+    let ungrown = n.branches.filter(b => !b.grown)
+    while(ungrown.length > 0) {
+      let idx = Math.floor(Math.random() * ungrown.length)
+      b = ungrown.splice(idx, 1)[0]
+      if(grow(b) == 0) { // leaves (return 1) don't count
+        return 0
       }
     }
     // all branches are grown already, grow yourself
-    // TODO consider weighting branches' colors
-    n.color = avgColor(n.branches.map(b => b.color))
-    // n.color = n.branches.reduce((acc, b) => colorSum(acc, b.color), [0, 0, 0, 0])
-    //                     .map(val => val / 4)
-    // console.log("rgba(" + n.color.join(", ") + ")")
-    drawNode(this.ctx, n, data)
+    n.color = avgColor(n.branches.map(b => b.color),
+                       n.branches.map(b => (b.x2 - b.x1) * (b.y2 - b.y1)))
+    n.split = false
     n.grown = true
-    return
+    drawNode(this.ctx, n)
+    return 0
   }
+
   this.split = function() {
     while(this.queue.length > 0) {
       // console.log(this.queue.length)
@@ -271,22 +297,30 @@ function qtFilter(w, h, maxSplits, ogImgData) {
       x2: x2,
       y2: y2,
       grown: false,
-      split: false,
+      split: true,
       color: undefined,
       branches: []
     }
   }
   this.drawNode = function(ctx, n) {
     if(!n.split || n.branches.length == 0) {
-      let c = n.color
-      cStr = "rgba(" + c[0] + ", " + c[1] + ", " + c[2] + ", " + (c[3]/255).toFixed(4) + ")"
-      // console.log(cStr)
-      ctx.fillStyle = cStr
-      // ctx.fillStyle = "rgba(255, 255, 255, 1.0)"
       let rw = n.x2 - n.x1
       let rh = n.y2 - n.y1
-      ctx.clearRect(n.x1, n.y1, rw, rh)
-      ctx.fillRect(n.x1, n.y1, rw, rh)
+      if(n.grown) {
+        cStr = cToRgbaStr(n.color)
+        // console.log(cStr)
+        ctx.fillStyle = cStr
+        ctx.clearRect(n.x1, n.y1, rw, rh)
+        ctx.fillRect(n.x1, n.y1, rw, rh)
+      }
+
+      // TODO: add as option
+      ctx.beginPath()
+      ctx.lineWidth = "1"
+      ctx.strokeStyle = "rgba(0, 0, 0, 1.0)"
+      ctx.rect(n.x1 + 0.5, n.y1 + 0.5, rw - 1, rh - 1)
+      ctx.stroke()
+
       imgData = ctx.getImageData(0, 0, w, h)
       data = imgData.data
       return
@@ -299,6 +333,10 @@ function qtFilter(w, h, maxSplits, ogImgData) {
 }
 
 // filter helper functions
+
+function cToRgbaStr(c) {
+ return "rgba(" + c[0] + ", " + c[1] + ", " + c[2] + ", " + (c[3]/255).toFixed(4) + ")"
+}
 
 function indecesOf(x, y, w) {
   let r = (y * w + x) * 4;
@@ -333,20 +371,25 @@ function colorDiff2(arr1, arr2) {
 }
 
 // TODO: add weighting
-function avgColor(colors) {
+function avgColor(colors, weights=null) {
+  if(!weights) {
+    weights = new Array(colors.length).fill(1 / colors.length)
+  } else {
+    let totalWeight = weights.reduce((acc, val) => acc + val)
+    weights = weights.map(val => val / totalWeight)
+  }
   avg = [0, 0, 0, 0]
   for(let c = 0; c < colors.length; c++) {
-    avg[0] += colors[c][3] * colors[c][0]
-    avg[1] += colors[c][3] * colors[c][1]
-    avg[2] += colors[c][3] * colors[c][2]
-    avg[3] += colors[c][3]
+    avg[0] += weights[c] * colors[c][3] * colors[c][0]
+    avg[1] += weights[c] * colors[c][3] * colors[c][1]
+    avg[2] += weights[c] * colors[c][3] * colors[c][2]
+    avg[3] += weights[c] * colors[c][3]
   }
   if(avg[3] != 0) {
     avg[0] /= avg[3]
     avg[1] /= avg[3]
     avg[2] /= avg[3]
   }
-  avg[3] /= colors.length
   return avg
 }
 
