@@ -62,8 +62,7 @@ onmessage = function(msg) {
       break
     case "qt":
     case "quad":
-      // octx = msg.data.ocvs.getContext("2d")
-      filter = qtFilter(w, h, msg.data.maxSplits, imgData)
+      filter = qtFilter(w, h, msg.data.maxSplits, imgData, msg.data.maxDepth)
       break
   }
   console.log(filter)
@@ -170,10 +169,9 @@ function fsFilter(w, h, palette) {
 
 // TODO allow for other splitting heuristics than random
 // ^ will mean changing perc() which is broken currently
-function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
-  let longDim = Math.max(w, h)
-  let pow2 = Math.pow(2, Math.ceil(Math.log2(longDim / leafSize)))
-  let maxGrowable = (4 * pow2 * pow2 - 1) / 3
+function qtFilter(w, h, maxSplits, ogImgData, maxDepth=8) {
+  let maxGrowable = (4 ** (maxDepth+1) - 1) / 3
+  console.log(maxGrowable)
   this.ctx = new OffscreenCanvas(w, h).getContext("2d")
   this.ctx.putImageData(ogImgData, 0, 0)
   this.splits = 0
@@ -185,6 +183,7 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
     grown: false,
     split: true,
     color: undefined,
+    depth: 0,
     branches: []
   }
   this.numGrown = 0
@@ -195,19 +194,9 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
       this.numGrown++
       return 0
     }
-    // if (!this.root.grown) {
-    //   this.grow(this.root)
-    //   this.numGrown++
-    //   return 0
-    // }
-    // if (this.splits < maxSplits) {
-    //   if(this.split() == 0) {
-    //     this.splits++
-    //     // console.log(this.splits)
-    //     return 0
-    //   }
-    //   return -1
-    // }
+    if(this.cleanTree(this.root) == 0) {
+      return 0
+    }
     return -1
     // TODO: allow for editing after filter (maintain tree structure)
   }
@@ -227,7 +216,7 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
       n.grown = true
       return 1
     }
-    if (leafSize > 1 && n.x2 - n.x1 <= leafSize && n.y2 - n.y1 <= leafSize) {
+    if (n.depth >= maxDepth) {
       colors = []
       for(let x = n.x1; x < n.x2; x++) {
         for(let y = n.y1; y < n.y2; y++) {
@@ -243,7 +232,8 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
       return 0
     }
     if (n.branches.length == 0) { // doesn't have branches yet
-      n.branches = this.genBranches(n.x1, n.y1, n.x2, n.y2)
+      n.split = true
+      n.branches = this.genBranches(n.x1, n.y1, n.x2, n.y2, n.depth+1)
       drawNode(this.ctx, n) // takes a long time, but a cool visual
     }
     // randomly select ungrown child
@@ -284,21 +274,22 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
     }
     return -1
   }
-  this.genBranches = function(x1, y1, x2, y2) {
+  this.genBranches = function(x1, y1, x2, y2, d) {
     let xMid = Math.floor((x1 + x2) / 2)
     let yMid = Math.floor((y1 + y2) / 2)
-    return [this.newNode(x1, y1, xMid, yMid), this.newNode(xMid, y1, x2, yMid),
-            this.newNode(x1, yMid, xMid, y2), this.newNode(xMid, yMid, x2, y2)]
+    return [this.newNode(x1, y1, xMid, yMid, d), this.newNode(xMid, y1, x2, yMid, d),
+            this.newNode(x1, yMid, xMid, y2, d), this.newNode(xMid, yMid, x2, y2, d)]
   }
-  this.newNode = function(x1, y1, x2, y2) {
+  this.newNode = function(x1, y1, x2, y2, d) {
     return {
       x1: x1,
       y1: y1,
       x2: x2,
       y2: y2,
       grown: false,
-      split: true,
+      split: false,
       color: undefined,
+      depth: d,
       branches: []
     }
   }
@@ -315,11 +306,11 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
       }
 
       // TODO: add as option
-      ctx.beginPath()
-      ctx.lineWidth = "1"
-      ctx.strokeStyle = "rgba(0, 0, 0, 1.0)"
-      ctx.rect(n.x1 + 0.5, n.y1 + 0.5, rw - 1, rh - 1)
-      ctx.stroke()
+      // ctx.beginPath()
+      // ctx.lineWidth = "1"
+      // ctx.strokeStyle = "rgba(0, 0, 0, 1.0)"
+      // ctx.rect(n.x1 + 0.5, n.y1 + 0.5, rw - 1, rh - 1)
+      // ctx.stroke()
 
       imgData = ctx.getImageData(0, 0, w, h)
       data = imgData.data
@@ -328,6 +319,35 @@ function qtFilter(w, h, maxSplits, ogImgData, leafSize=8) {
     for(let i = 0; i < n.branches.length; i++) {
       this.drawNode(ctx, n.branches[i])
     }
+  }
+  this.cleanTree = function(n) {
+    if(n.grown) {
+      return 0
+    }
+    if(!n.split) {
+      colors = []
+      for(let x = n.x1; x < n.x2; x++) {
+        for(let y = n.y1; y < n.y2; y++) {
+          colors.push(arrayAt(x, y, w, ogImgData.data))
+        }
+      }
+      // console.log(colors.map(c => cToRgbaStr(c)))
+      n.color = avgColor(colors)
+      // console.log(n.color)
+      n.split = false
+      n.grown = true
+      this.drawNode(this.ctx, n)
+      return 0
+    }
+    let ungrown = n.branches.filter(b => !b.grown)
+    while(ungrown.length > 0) {
+      let idx = Math.floor(Math.random() * ungrown.length)
+      b = ungrown.splice(idx, 1)[0]
+      if(cleanTree(b) == 0) { // leaves (return 1) don't count
+        return 0
+      }
+    }
+    return -1
   }
   return this
 }

@@ -378,6 +378,7 @@ function polyWorker(initMsg) {
     return -2
   } else {
     workerRunning = true
+    _ = [...optionsDiv.getElementsByClassName("apply")].map(e => e.disabled = true)
   }
 
   var worker = new Worker('poly-worker.js')
@@ -386,6 +387,7 @@ function polyWorker(initMsg) {
       worker.terminate()
       delete worker
       workerRunning = false
+      _ = [...optionsDiv.getElementsByClassName("apply")].map(e => e.disabled = false)
       updateHist()
       return
     }
@@ -514,28 +516,26 @@ function justAlpha() {
   }
 }
 
-function w_quadTree() {
-  // tempCvs = document.createElement("canvas")
-  // ocvs = tempCvs.transferControlToOffscreen()
-  polyWorker({imgData, w, h, maxSplits:(w + h) / 2, filter:"qt"})
+function quadTree(heur, maxDepth, maxSplits) {
+  polyWorker({imgData, w, h, maxSplits, maxDepth, filter:"qt", heur})
 }
 
 // Breadth-first quad tree
 quadQueue = []
 
-function quadTree(shouldSplit = quadCount(1000)) {
-  quadQueue.push(function() {
-    r_quadTree(0, 0, w, h, shouldSplit)
-  })
-  while (quadQueue.length > 0) {
-    idx = Math.floor(Math.random() * quadQueue.length)
-    quadQueue.swap(0, idx)
-    let task = quadQueue[0]
-    quadQueue = quadQueue.slice(1)
-    // console.log(task)
-    task()
-  }
-}
+// function quadTree(shouldSplit = quadCount(1000)) {
+//   quadQueue.push(function() {
+//     r_quadTree(0, 0, w, h, shouldSplit)
+//   })
+//   while (quadQueue.length > 0) {
+//     idx = Math.floor(Math.random() * quadQueue.length)
+//     quadQueue.swap(0, idx)
+//     let task = quadQueue[0]
+//     quadQueue = quadQueue.slice(1)
+//     // console.log(task)
+//     task()
+//   }
+// }
 
 function percChance(perc) {
   return Math.random() < (perc / 100)
@@ -987,24 +987,20 @@ function matchWave(theta = 0, lambda = 15, arr = graydata) {
 // apply a given function
 // TODO: make sure theres no doubling in history (update history in specific functions)
 
-function apply(name) {
-  imgData = ctx.getImageData(0, 0, w, h);
-  data = imgData.data;
-  console.log(name)
-  window[name]();
-  updateHist()
-  ctx.putImageData(imgData, 0, 0);
-  console.log("complete.")
-}
-
-function quadTreeApply() {
-  imgData = ctx.getImageData(0, 0, w, h)
-  data = imgData.data;
-  splits = Number(document.getElementById("quad-tree-splits").value)
-  shouldSplit = quadCount(splits)
-  quadTree(shouldSplit)
-  updateHist()
-  ctx.putImageData(imgData, 0, 0)
+function apply(name=null) {
+  if(name == null) {
+    name = currentTool
+  }
+  switch(name) {
+    case "quad-tree":
+      heuristic = optionsDiv.querySelector("select#qt-heur").value
+      maxDepth = Math.floor(optionsDiv.querySelector("input#qt-depth").value)
+      maxSplits = Math.floor(optionsDiv.querySelector("input#qt-splits").value)
+      quadTree(heuristic, maxDepth, maxSplits)
+      break
+    default:
+      console.log("No case for:", name)
+  }
 }
 
 // history (undo, redo)
@@ -1041,19 +1037,6 @@ function main() {
 
   // testWorker()
   w_quadTree()
-
-  // palette.push(rgbToArr(0x31E9BB));
-  // palette.push(rgbToArr(0x4BF058));
-  // palette.push(rgbToArr(0x8031F6));
-  // palette.push(rgbToArr(0xAB2A61));
-  // palette.push(rgbToArr(0x4A3B33));
-
-  // for(let i = 0; i < 5; i++) {
-  //     palette.push(rgbToArr(Math.floor(Math.random() * 0xffffff)))
-  // }
-  // for(let i = 0; i < 5; i++) {
-  //     palette.push(rgbaToArr(Math.floor(Math.random() * 0xffffffff)));
-  // }
 
   // palette = [
   //   [0, 0, 0, 255],
@@ -1147,6 +1130,7 @@ function init() {
     }
   }
 
+  optionsDiv = document.querySelector("div#options")
   paletteDiv = document.querySelector("div#palette")
 
   populatePalette()
@@ -1227,6 +1211,50 @@ function saveCanvas() {
   var download = document.getElementById("download")
   var image = cvs.toDataURL("image/png").replace("image/png", "image/octet-stream")
   download.setAttribute("href", image)
+}
+
+var optionsDiv
+var currentTool = "upload"
+
+function switchOptions(toolName) {
+  if(currentTool != toolName) {
+    let oldBtn = document.querySelector("input#" + currentTool)
+    if(oldBtn != null) {
+      oldBtn.style.backgroundColor = "#ddd"
+    }
+    currentTool = toolName
+    let newBtn = document.querySelector("input#" + toolName)
+    if(newBtn != null) {
+      newBtn.style.backgroundColor = "#bbb"
+    }
+    // hide old span
+    spans = optionsDiv.children
+    for(let i = 0; i < spans.length; i++) {
+      span = spans[i]
+      if(span.id == toolName) {
+        span.classList.remove("hidden")
+      } else {
+        span.classList.add("hidden")
+      }
+    }
+    // show new span
+    if(workerRunning) {
+      _ = [...optionsDiv.getElementsByClassName("apply")].map(e => e.disabled = true)
+    }
+  }
+}
+
+function optionSelectChange(select) {
+  els = optionsDiv.querySelector("span#" + select.id).children
+  console.log(els)
+  for(let e = 0; e < els.length; e++) {
+    el = els[e]
+    if(el.classList.contains(select.value) || el.classList.contains("all")) {
+      el.classList.remove("hidden")
+    } else {
+      el.classList.add("hidden")
+    }
+  }
 }
 
 var paletteDiv

@@ -6,6 +6,16 @@ body {
   overflow: auto;
 }
 
+span {
+  margin:0px;
+  padding:0px;
+  border:0px;
+}
+
+.hidden {
+  display: none;
+}
+
 div#content {
   position: absolute;
   top: 0px;
@@ -44,18 +54,22 @@ input.hist {
   float: left;
 }
 
-input {
+input, select {
   border: 3px solid #aaa;
   border-radius: 4px;
   background-color: #ddd;
+  opacity: 0.8;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
 }
 
-input:hover {
-  background-color: #eee;
+input:hover:not(:disabled) {
+  /* background-color: #eee; */
+  opacity: 1;
 }
 
 input:active {
-  background-color: #ccc;
+  background-color: #bbb;
 }
 
 *:focus {
@@ -95,16 +109,28 @@ canvas#canvas {
 div#options {
   display: block;
   position: absolute;
-  padding: 8px 8px;
+  padding: 4px;
   background-color: #999;
   border: 2px solid #ddd;
   border-radius: 4px;
-  width: 200px;
-  max-width: 200px;
+  width: 208px;
   min-height: 400px;
   right: 8px;
   top: 8px;
-  bottom: 236px;
+  bottom: 128px;
+}
+
+div#options * {
+  width: 196px;
+  margin: 2px 2px;
+}
+
+div#options h1 {
+  margin: 4px 8px;
+}
+
+div#options select {
+  width: 202px;
 }
 
 input#apply {
@@ -116,14 +142,10 @@ input#apply {
   left:50%;
 }
 
+/* */
 input[type=range] {
-  width: 100%;
-}
-
-/* *
-.slider {
   -webkit-appearance: none;
-  width: 100%;
+  width: 188px;
   height: 16px;
   background: #ddd;
   outline: none;
@@ -132,11 +154,11 @@ input[type=range] {
   transition: opacity .2s;
 }
 
-.slider:hover {
+input[type=range]:hover {
   opacity: 1;
 }
 
-.slider::-webkit-slider-thumb {
+input[type=range]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 16px;
@@ -145,13 +167,27 @@ input[type=range] {
   cursor: pointer;
 }
 
-.slider::-moz-range-thumb {
+input[type=range]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   background: #000;
   cursor: pointer;
 }
+
+input[type=range].danger-min {
+  background: linear-gradient(to right, #e66, #ddd, #ddd, #ddd)
+}
+
+input[type=range].danger-max {
+  background: linear-gradient(to left, #e66, #ddd, #ddd, #ddd)
+}
 /* */
+p.r-sub {
+  float: right;
+  width: auto !important;
+  font-size:10px;
+  margin-top:-4px !important;
+}
 
 div#palette {
   display: block;
@@ -163,7 +199,7 @@ div#palette {
   border-radius: 4px;
   width: 216px;
   max-width: 216px;
-  height: 216px;
+  height: 108px;
   right: 8px;
   bottom: 8px;
 }

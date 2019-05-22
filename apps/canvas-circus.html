@@ -8,32 +8,6 @@
 
   <link rel="stylesheet" href="/css/canvas-circus.css">
   <script src="canvas-circus.js" type="text/javascript"></script>
-
-  <!-- <style>
-    @keyframes left-right {
-      from {
-        left: 0px;
-      }
-
-      to {
-        left: 400px;
-      }
-    }
-
-    div {
-      z-index: -2;
-      position: absolute;
-      left: 0px;
-      top: 0px;
-      width: 400px;
-      height: 800px;
-      background-color: green;
-    }
-
-    div.anim {
-      animation: left-right 3s linear 0s infinite alternate;
-    }
-  </style> -->
 </head>
 
 <body>
@@ -45,19 +19,17 @@
         </form>
     </div>
   </div>
-  <!-- <div class="anim"></div> -->
   <div id="content">
     <div id="toolbox">
       <input id="upload" class="tool" type="button" value="Upload" onclick="showUploadModal()" />
       <a id="download" download="image.png">
         <input id="save" class="tool" type="button" value="Save" onclick="saveCanvas()" />
       </a>
-      <input id="quad-tree" class="tool" type="button" value="Quad Tree" onclick='apply("quadTree")' />
-      <input id="sort-pixels" class="tool" type="button" value="Sort Pixels" onclick='apply("sortPixels")' />
-      <input id="grayscale" class="tool" type="button" value="Grayscale" onclick='apply("grayscale")' />
-      <input id="heavy-color" class="tool" type="button" value="Heavy Color" onclick='apply("heavyColor")' />
-      <input id="dither" class="tool" type="button" value="Dither" onclick='apply("defaultDither")' />
-      <input id="debug" class="tool" type="button" value="Main" onclick='main()' />
+      <input id="quad-tree" class="tool" type="button" value="Quad Tree" onclick='switchOptions("quad-tree")' />
+      <input id="sort-pixels" class="tool" type="button" value="Sort Pixels" onclick='switchOptions("sort-pixels")' />
+      <input id="colors" class="tool" type="button" value="Colors" onclick='switchOptions("colors")' />
+      <input id="dither" class="tool" type="button" value="Dither" onclick='switchOptions("dither")' />
+      <input id="debug" class="tool" type="button" value="Debug" onclick='main()' />
     </div>
     <div id="history">
       <input id="undo" class="hist" type="button" value="Undo" onclick="undo()" />
@@ -68,22 +40,37 @@
       <canvas id="canvas" width="0px" height="0px"></canvas>
     </div>
     <div id="options">
-      <template id="quad-tree-options">
-
-      </template>
-      <h1>Quad Tree</h1>
-      <p>Max Splits</p>
-      <input id="quad-tree-splits" type="number" min="0" value="100" />
-      <input id="apply" type="button" value="Apply" onclick="quadTreeApply()" />
+      <span class="hidden" id="quad-tree">
+        <h1>Quad Tree</h1>
+        <p>Split Heuristic</p>
+        <select id="qt-heur" onchange="optionSelectChange(this)">
+          <option value="rand" selected>Random</option>
+          <option value="var">Variance [WIP]</option>
+        </select>
+        <span id="qt-heur">
+          <p class="all">Depth</p>
+          <input id="qt-depth" type="range" class="danger-max all" min="1" max="16" value="4" step="any"/>
+          <p class="all r-sub">*warning: slow</p>
+          <p class="rand">Max Splits</p>
+          <input id="qt-splits" type="number" class="rand" min="0" value="100" />
+        </span>
+        <input id="apply" class="apply" type="button" value="Apply" onclick="apply()"/>
+      </span>
+      <span class="hidden" id="sort-pixels">
+        <h1>Sort Pixels</h1>
+        <p></p>
+      </span>
+      <span class="hidden" id="colors">
+        <h1>Colors</h1>
+      </span>
+      <span class="hidden" id="dither">
+        <h1>Dither</h1>
+      </span>
     </div>
     <div id="palette">
 
     </div>
   </div>
-  <!-- <input type="range" id="slider" min="0" max="100" style="width:100%"/> -->
-  <!-- <image src="bouquet.png" /> -->
-  <!-- <image src='fire.png' width=50 height=50/> -->
-  <!-- <image src='portrait-small.jpg' width=50 height=50/> -->
 </body>
 
 </html>
