@@ -234,3 +234,35 @@ div#modal-content {
   width: 50%;
   text-align: center;
 }
+
+div#worker-toast {
+  position: absolute;
+  display: none;
+  flex-direction: row;
+  z-index: 1;
+  bottom: 16px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  padding: 8px;
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+#worker-load {
+  width: 100.2px;
+  margin: 0px 16px;
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+#worker-load-bar {
+  width: 0px;
+  height: 100%;
+  background-color: #ddd;
+  border-radius: 1px;
+}
+
+#worker-cancel {
+}

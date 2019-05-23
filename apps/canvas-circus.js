@@ -15,8 +15,6 @@ var palette = [
   [0, 0, 0, 0]
 ]
 
-var slider;
-
 // utility functions
 
 Uint32Array.prototype.swap = function(x, y) {
@@ -351,6 +349,9 @@ function disperatePalette(k) {
 // filter/effect functions
 
 var workerRunning = false
+var worker
+var workerToast
+var workerLoadBar
 
 function checkProgress(worker) {
   if (!workerRunning) {
@@ -381,19 +382,16 @@ function polyWorker(initMsg) {
     _ = [...optionsDiv.getElementsByClassName("apply")].map(e => e.disabled = true)
   }
 
-  var worker = new Worker('poly-worker.js')
+  worker = new Worker('poly-worker.js')
   worker.onmessage = function(msg) {
     if (msg.data == 'term') {
-      worker.terminate()
-      delete worker
-      workerRunning = false
-      _ = [...optionsDiv.getElementsByClassName("apply")].map(e => e.disabled = false)
-      updateHist()
+      cancelWorker()
       return
     }
     if (msg.data.tag == "prog") {
       // console.log(Math.floor(msg.data.perc))
       console.log(msg.data.perc)
+      workerLoadBar.style.width = Math.floor(msg.data.perc) + "px"
       return
     }
     imgData = msg.data
@@ -401,7 +399,22 @@ function polyWorker(initMsg) {
   }
 
   worker.postMessage(initMsg)
+  workerLoadBar.style.width = "0px"
+  workerToast.style.display = "flex"
   checkProgress(worker)
+}
+
+function cancelWorker() {
+  workerToast.style.display = "none"
+  if(workerRunning) {
+    worker.terminate()
+    delete worker
+    workerRunning = false
+    _ = [...optionsDiv.getElementsByClassName("apply")].map(e => e.disabled = false)
+    updateHist()
+  } else {
+    console.log("No worker running")
+  }
 }
 
 function testWorker() {
@@ -1036,7 +1049,7 @@ function main() {
   // console.log(data);
 
   // testWorker()
-  w_quadTree()
+  quadTree()
 
   // palette = [
   //   [0, 0, 0, 255],
@@ -1132,6 +1145,9 @@ function init() {
 
   optionsDiv = document.querySelector("div#options")
   paletteDiv = document.querySelector("div#palette")
+
+  workerToast = document.querySelector("#worker-toast")
+  workerLoadBar = workerToast.querySelector("#worker-load-bar")
 
   populatePalette()
 }
