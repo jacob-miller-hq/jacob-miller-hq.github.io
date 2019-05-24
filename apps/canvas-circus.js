@@ -12,7 +12,7 @@ var palette = [
   [0, 0, 255, 255],
   [255, 0, 255, 255],
   [255, 255, 255, 255],
-  [0, 0, 0, 0]
+  [0, 0, 0, 0],
 ]
 
 // utility functions
@@ -823,11 +823,7 @@ function quickSortPixels(lo, hi, mask = 0xffffffff) {
 }
 
 function sortPixels() {
-  console.log('Sorting pixels');
-  toPixels()
-  quickSortPixels(0, pixels.length);
-  fromPixels()
-  console.log('complete')
+  polyWorker({imgData, w, h, palette, filter: "fs"})
 }
 
 // TODO: make these use quickSortPixels
@@ -1011,6 +1007,8 @@ function apply(name=null) {
       maxSplits = Math.floor(optionsDiv.querySelector("input#qt-splits").value)
       quadTree(heuristic, maxDepth, maxSplits)
       break
+    case "sort-pixels":
+      sortPixels()
     default:
       console.log("No case for:", name)
   }
@@ -1135,13 +1133,18 @@ function init() {
   img.src = "../blotch-bouquet.png"; // set src to file url
   img.onload = imageIsLoaded; // optional onload event listener
 
-  modal = document.querySelector('div#modal')
+  modals = document.querySelectorAll('div.modal')
 
-  modal.onclick = function(event) {
-    if (event.target == modal) {
-      modal.style.display = "none";
+  modals.forEach(modal =>
+    modal.onclick = function(event) {
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
     }
-  }
+  )
+
+  uploadModal = document.querySelector('#upload-modal')
+  paletteModal = document.querySelector('#palette-modal')
 
   optionsDiv = document.querySelector("div#options")
   paletteDiv = document.querySelector("div#palette")
@@ -1164,16 +1167,14 @@ window.addEventListener('submit', function() {
   });
 });
 
-var modal
+var uploadModal
 
 function showUploadModal() {
-  modal.style.display = "inline"
+  uploadModal.style.display = "inline"
 }
 
 function imageIsLoaded(e) {
-  modal.style.display = "none"
-  // w = canvasDiv.clientHeight
-  // h = canvasDiv.clientHeight
+  uploadModal.style.display = "none"
   w = canvasDiv.offsetWidth
   h = canvasDiv.offsetHeight
   // console.log(w + " " + h)
@@ -1286,9 +1287,26 @@ function populatePalette() {
   for (let i = 0; i < palette.length; i++) {
     swatch = document.createElement("div")
     swatch.className = "swatch"
+    swatch.style.cursor = "pointer"
+    swatch.onclick = function () { editPalette(i) }
     colorStr = arrToStr(palette[i])
     // console.log(colorStr)
     swatch.style.backgroundColor = colorStr
+    swatch.style.visibility = "hidden"
     paletteDiv.appendChild(swatch)
+
+    if(palette[i][3] < 0x20) {
+      swatch.style.width = swatch.offsetWidth - 2 + "px"
+      swatch.style.height = swatch.offsetHeight - 2 + "px"
+      swatch.style.border = "1px dashed white"
+    }
+    swatch.style.visibility = ""
   }
+}
+
+function editPalette(i) {
+  console.log("Editing", palette[i])
+  paletteModal.style.display = "inline"
+  bigSwatch = paletteModal.querySelector("#big-swatch")
+  bigSwatch.style.backgroundColor = arrToStr(palette[i])
 }

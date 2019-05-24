@@ -78,6 +78,7 @@ input:active {
 
 input[type="button"] {
   border-radius: 16px;
+  padding:4px 16px;
 }
 
 input.tool {
@@ -143,9 +144,12 @@ input#apply {
 }
 
 /* */
+options input[type=range] {
+  width: 188px;
+}
+
 input[type=range] {
   -webkit-appearance: none;
-  width: 188px;
   height: 16px;
   background: #ddd;
   outline: none;
@@ -192,7 +196,6 @@ p.r-sub {
 div#palette {
   display: block;
   position: absolute;
-  z-index: -1;
   padding: 2px 0px;
   background-color: #999;
   border: 2px solid #ddd;
@@ -212,11 +215,10 @@ div#palette {
   border-radius: 4px;
 }
 
-div#modal {
-  display: block; /* Hidden by default */ /* or 'none'*/
+.modal {
+  display: none; /* Hidden by default */ /* or 'none'*/
   position: fixed; /* Stay in place */
   z-index: 1; /* Sit on top */
-  padding-top: 40vh; /* Location of the box */
   left: 0;
   top: 0;
   width: 100%; /* Full width */
@@ -226,13 +228,62 @@ div#modal {
   background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-div#modal-content {
-  background-color: #fefefe;
+.modal-content {
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
   margin: auto;
+}
+
+#upload-modal {
+  padding-top: 40vh; /* Location of the box */
+}
+
+.modal-content#upload {
   padding: 48px;
-  border: 1px solid #888;
   width: 50%;
   text-align: center;
+}
+
+#palette-modal {
+  padding-top: 30vh;
+}
+
+#palette-editor {
+  width: 600px;
+  text-align: center;
+  padding: 8px;
+}
+
+#picker {
+  display: flex;
+  flex-direction: row;
+  margin: 0px 32px;
+}
+
+#sliders {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+#big-swatch {
+  width: 100px;
+  height: 100px;
+  background-color: #999;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+.close {
+  float: right;
+  text-decoration: none;
+  color: black;
+  margin: 0px 6px;
+}
+
+#palette-editor input[type="button"] {
+  margin: 8px;
 }
 
 div#worker-toast {

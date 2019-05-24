@@ -11,8 +11,8 @@
 </head>
 
 <body>
-  <div id="modal" style="display:none;">
-    <div id="modal-content">
+  <div id="upload-modal" class="modal">
+    <div id="upload" class="modal-content">
         <form action="javascript:uploadImage()">
           <input type="file" name="pic" accept="image/*">
           <input type="submit">
@@ -59,6 +59,7 @@
       <span class="hidden" id="sort-pixels">
         <h1>Sort Pixels</h1>
         <p></p>
+        <input id="apply" class="apply" type="button" value="Apply" onclick="apply()"/>
       </span>
       <span class="hidden" id="colors">
         <h1>Colors</h1>
@@ -68,7 +69,6 @@
       </span>
     </div>
     <div id="palette">
-
     </div>
     <div id="worker-toast">
       Worker Running
@@ -77,6 +77,24 @@
         </div>
       </div>
       <a id="worker-cancel" href="javascript:cancelWorker()">Cancel</a>
+    </div>
+    <div id="palette-modal" class="modal">
+      <div id="palette-editor" class="modal-content">
+        <a class="close" href="#" onclick="paletteModal.style.display = 'none'">x</a>
+        <h1>Palette Editor</h1>
+        <div id="picker">
+          <div id="sliders">
+            <input id="red" type="range" min="0" max="255" />
+            <input id="green" type="range" min="0" max="255" />
+            <input id="blue" type="range" min="0" max="255" />
+            <input id="alpha" type="range" min="0" max="1" step="any"/>
+          </div>
+          <div id="big-swatch">
+          </div>
+        </div>
+        <input id="cancel" type="button" value="Cancel" onclick="paletteModal.style.display = 'none'"/>
+        <input id="confirm" type="button" value="Confirm" />
+      </div>
     </div>
   </div>
 </body>
