@@ -84,16 +84,16 @@
         <h1>Palette Editor</h1>
         <div id="picker">
           <div id="sliders">
-            <input id="red" type="range" min="0" max="255" />
-            <input id="green" type="range" min="0" max="255" />
-            <input id="blue" type="range" min="0" max="255" />
-            <input id="alpha" type="range" min="0" max="1" step="any"/>
+            <input id="red" type="range" min="0" max="255" oninput="editColor()" />
+            <input id="green" type="range" min="0" max="255" oninput="editColor()" />
+            <input id="blue" type="range" min="0" max="255" oninput="editColor()" />
+            <input id="alpha" type="range" min="0" max="255" oninput="editColor()" />
           </div>
           <div id="big-swatch">
           </div>
         </div>
         <input id="cancel" type="button" value="Cancel" onclick="paletteModal.style.display = 'none'"/>
-        <input id="confirm" type="button" value="Confirm" />
+        <input id="confirm" type="button" value="Confirm" onclick="confirmColor()" />
       </div>
     </div>
   </div>

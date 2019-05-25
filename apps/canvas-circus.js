@@ -89,7 +89,7 @@ function rgbToArr(hex) {
 }
 
 function toHex(v) {
-  return ("00" + v.toString(16)).slice(-2)
+  return ("00" + Number(v).toString(16)).slice(-2)
 }
 
 function arrToStr(arr) {
@@ -1145,6 +1145,11 @@ function init() {
 
   uploadModal = document.querySelector('#upload-modal')
   paletteModal = document.querySelector('#palette-modal')
+  // TODO: do I want to do this using HOFs?
+  paletteSliders.push(paletteModal.querySelector('#red'))
+  paletteSliders.push(paletteModal.querySelector('#green'))
+  paletteSliders.push(paletteModal.querySelector('#blue'))
+  paletteSliders.push(paletteModal.querySelector('#alpha'))
 
   optionsDiv = document.querySelector("div#options")
   paletteDiv = document.querySelector("div#palette")
@@ -1304,9 +1309,60 @@ function populatePalette() {
   }
 }
 
-function editPalette(i) {
-  console.log("Editing", palette[i])
+var paletteModal
+var paletteSliders = []
+var paletteIndex = -1
+
+// TODO: add hex editor (text input)
+// TODO: allow for adding/removing colors
+function editPalette(p) {
+  console.log("Editing", palette[p])
+  paletteIndex = p
   paletteModal.style.display = "inline"
   bigSwatch = paletteModal.querySelector("#big-swatch")
-  bigSwatch.style.backgroundColor = arrToStr(palette[i])
+  bigSwatch.style.backgroundColor = arrToStr(palette[p])
+
+  for(let i = 0; i < 4; i++) {
+    paletteSliders[i].value = palette[p][i]
+  }
+  sliderGradients(palette[p])
+}
+
+function editColor() {
+  color = getColorFromSliders()
+  bigSwatch.style.backgroundColor = arrToStr(color)
+  sliderGradients(color)
+}
+
+function getColorFromSliders() {
+  let color = [0, 0, 0, 0]
+  for(let i = 0; i < 4; i++) {
+    color[i] = paletteSliders[i].value
+  }
+  return color
+}
+
+function sliderGradients(c) {
+  for(let i = 0; i < 4; i++) {
+    let leftStop = c.slice()
+    leftStop[i] = 0x00
+    let rightStop = c.slice()
+    rightStop[i] = 0xff
+    let grad = "linear-gradient(to right, " +
+                arrToStr(leftStop) + ", " +
+                arrToStr(rightStop) + ")"
+    paletteSliders[i].style.background = grad
+  }
+}
+
+function confirmColor() {
+  if(paletteIndex != -1) {
+    color = getColorFromSliders()
+    for(let i = 0; i < 4; i++) {
+      palette[paletteIndex][i] = color[i]
+    }
+    paletteIndex = -1
+    populatePalette()
+  }
+  paletteModal.style.display = "none"
 }
