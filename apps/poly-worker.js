@@ -358,7 +358,7 @@ function qtFilter(w, h, maxSplits, ogImgData, maxDepth=8) {
 }
 
 // TODO: still not working :(((
-function sortFilter(w, h) {
+function sortFilter(w, h, comp="bright") {
   this.stack = [{lo:0, hi:w*h, idx:-1, pivot:-1}]
   this.count = 0
   this.step = function() {
@@ -376,13 +376,14 @@ function sortFilter(w, h) {
       }
       if(task.pivot == -1) {
         task.pivot = task.lo
-        while(compare(arrayAtIndex(4*task.pivot, data), arrayAtIndex(4*(task.pivot+1), data))) {
-          task.pivot++
-          this.count++
-          if(task.pivot + 1 == task.hi) {
-            return 0
-          }
-        }
+        // while(compare(arrayAtIndex(4*task.pivot, data), arrayAtIndex(4*(task.pivot+1), data)) >= 0) {
+        //   task.pivot++
+        //   this.count++
+        //   if(task.pivot + 1 >= task.hi) {
+        //     console.log(task.lo, task.hi, "sorted")
+        //     return 0
+        //   }
+        // }
         // console.log(task.pivot)
         swapPixels(task.lo, task.pivot, data)
       }
@@ -392,6 +393,8 @@ function sortFilter(w, h) {
       }
       // console.log(task.pivot, task.idx)
       if(task.idx >= task.hi) {
+        // console.log(task.pivot, task.lo)
+        // console.log(arrayAtIndex(4*(task.pivot), data), arrayAtIndex(4*task.lo, data))
         swapPixels(task.pivot, task.lo, data)
         this.stack.push({lo:task.pivot+1, hi:task.hi, idx:-1, pivot:-1})
         this.stack.push({lo:task.lo, hi:task.pivot, idx:-1, pivot:-1})
@@ -401,7 +404,7 @@ function sortFilter(w, h) {
       // TODO make sure this is right
       this.count++
       // console.log(task, task.idx, task.lo, data)
-      if(!compare(arrayAtIndex(4*task.lo, data), arrayAtIndex(4*task.idx, data))) {
+      if(compare(arrayAtIndex(4*task.lo, data), arrayAtIndex(4*task.idx, data)) < 0) {
         // console.log("swap", task.idx, task.pivot)
         task.pivot++
         swapPixels(task.idx, task.pivot, data)
@@ -412,20 +415,17 @@ function sortFilter(w, h) {
     }
     return -1
   }
-  this.compare = function(c1, c2) {
-    if(c1[3] > c2[3]) {
-      return false
-    }
-    if(c1[1] > c2[1]) {
-      return false
-    }
-    if(c1[0] > c2[0]) {
-      return false
-    }
-    if(c1[2] > c2[2]) {
-      return false
-    }
-    return true
+  switch(comp) {
+    case "bright":
+    case "brightness":
+      this.compare = compareBrightness
+      break
+    case "hex":
+      this.compare = compareHex
+      break
+    default:
+      console.log("No compare function case for", comp)
+      this.compare = function() { return 1 }
   }
   return this
 }
@@ -516,4 +516,22 @@ function swapPixels(a, b, data) {
     data[a*4 + i] = data[b*4 + i]
     data[b*4 + i] = temp
   }
+}
+
+// compare functions are:
+//   positive when c1 < c2 (in order)
+//   zero when c1 == c2    (equal)
+//   negative when c1 > c2 (out of order)
+// by whatever comparison is made
+function compareBrightness(c1, c2, data) {
+  b1 = c1[3] * (0.2126*c1[0] + 0.7152*c1[1] + 0.0722*c1[2])
+  b2 = c2[3] * (0.2126*c2[0] + 0.7152*c2[1] + 0.0722*c2[2])
+  return b2 - b1
+}
+
+function compareHex(c1, c2, data) {
+  vals = new Uint32Array(2)
+  vals[0] = (c1[3] << 24) + (c1[0] << 16) + (c1[1] << 8) + c1[2]
+  vals[1] = (c2[3] << 24) + (c2[0] << 16) + (c2[1] << 8) + c2[2]
+  return vals[1] - vals[0]
 }
