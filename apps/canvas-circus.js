@@ -390,7 +390,7 @@ function polyWorker(initMsg) {
     }
     if (msg.data.tag == "prog") {
       // console.log(Math.floor(msg.data.perc))
-      console.log(msg.data.perc)
+      // console.log(msg.data.perc)
       workerLoadBar.style.width = Math.floor(msg.data.perc) + "px"
       return
     }
@@ -419,6 +419,10 @@ function cancelWorker() {
 
 function testWorker() {
   polyWorker({imgData, w, h, filter: "test"})
+}
+
+function dither() {
+  polyWorker({imgData, w, h, palette, filter: "fs"})
 }
 
 function defaultDither() {
@@ -823,7 +827,7 @@ function quickSortPixels(lo, hi, mask = 0xffffffff) {
 }
 
 function sortPixels() {
-  polyWorker({imgData, w, h, palette, filter: "fs"})
+  polyWorker({imgData, w, h, filter: "sort"})
 }
 
 // TODO: make these use quickSortPixels
@@ -1009,6 +1013,10 @@ function apply(name=null) {
       break
     case "sort-pixels":
       sortPixels()
+      break
+    case "dither":
+      dither()
+      break
     default:
       console.log("No case for:", name)
   }
@@ -1047,7 +1055,7 @@ function main() {
   // console.log(data);
 
   // testWorker()
-  quadTree()
+  // quadTree()
 
   // palette = [
   //   [0, 0, 0, 255],
@@ -1071,6 +1079,10 @@ function main() {
   // heirarchicalCluster(0.2, 0.8);
   // console.log(clusters);
   // colorClusters(slider.value);
+
+  grayscale()
+  updateHist()
+  ctx.putImageData(imgData, 0, 0)
 
   // toGrayscale();
   //

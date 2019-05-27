@@ -64,6 +64,11 @@ onmessage = function(msg) {
     case "quad":
       filter = qtFilter(w, h, msg.data.maxSplits, imgData, msg.data.maxDepth)
       break
+    case "sort":
+      filter = sortFilter(w, h)
+      break
+    default:
+      console.log("No filter for", msg.data.filter)
   }
   console.log(filter)
 
@@ -352,6 +357,78 @@ function qtFilter(w, h, maxSplits, ogImgData, maxDepth=8) {
   return this
 }
 
+// TODO: still not working :(((
+function sortFilter(w, h) {
+  this.stack = [{lo:0, hi:w*h, idx:-1, pivot:-1}]
+  this.count = 0
+  this.step = function() {
+    return this.quickSort()
+  }
+  this.perc = function() {
+    let n = w * h
+    return this.count / (n * Math.log2(n))
+  }
+  this.quickSort = function() {
+    while(this.stack.length > 0) {
+      task = this.stack.pop()
+      if(task.lo + 1 >= task.hi) {
+        continue
+      }
+      if(task.pivot == -1) {
+        task.pivot = task.lo
+        while(compare(arrayAtIndex(4*task.pivot, data), arrayAtIndex(4*(task.pivot+1), data))) {
+          task.pivot++
+          this.count++
+          if(task.pivot + 1 == task.hi) {
+            return 0
+          }
+        }
+        // console.log(task.pivot)
+        swapPixels(task.lo, task.pivot, data)
+      }
+      if(task.idx == -1) {
+        task.idx = task.pivot + 1
+        console.log(task.lo, task.hi, task.pivot)
+      }
+      // console.log(task.pivot, task.idx)
+      if(task.idx >= task.hi) {
+        swapPixels(task.pivot, task.lo, data)
+        this.stack.push({lo:task.pivot+1, hi:task.hi, idx:-1, pivot:-1})
+        this.stack.push({lo:task.lo, hi:task.pivot, idx:-1, pivot:-1})
+        // console.log(this.stack.length)
+        continue
+      }
+      // TODO make sure this is right
+      this.count++
+      // console.log(task, task.idx, task.lo, data)
+      if(!compare(arrayAtIndex(4*task.lo, data), arrayAtIndex(4*task.idx, data))) {
+        // console.log("swap", task.idx, task.pivot)
+        task.pivot++
+        swapPixels(task.idx, task.pivot, data)
+      }
+      task.idx++
+      this.stack.push(task)
+      return 0
+    }
+    return -1
+  }
+  this.compare = function(c1, c2) {
+    if(c1[3] > c2[3]) {
+      return false
+    }
+    if(c1[1] > c2[1]) {
+      return false
+    }
+    if(c1[0] > c2[0]) {
+      return false
+    }
+    if(c1[2] > c2[2]) {
+      return false
+    }
+    return true
+  }
+  return this
+}
 // filter helper functions
 
 function cToRgbaStr(c) {
@@ -390,7 +467,6 @@ function colorDiff2(arr1, arr2) {
   return dRGB2 * arr1[3] * arr2[3] / 255 / 255 + dA * dA;
 }
 
-// TODO: add weighting
 function avgColor(colors, weights=null) {
   if(!weights) {
     weights = new Array(colors.length).fill(1 / colors.length)
@@ -429,4 +505,15 @@ function closestPaletteIndex(arr, pal) {
 
 function getError(og, appr) {
   return [og[0] - appr[0], og[1] - appr[1], og[2] - appr[2], og[3] - appr[3]]
+}
+
+function swapPixels(a, b, data) {
+  if(a == b) {
+    return
+  }
+  for(let i = 0; i < 4; i++) {
+    temp = data[a*4 + i]
+    data[a*4 + i] = data[b*4 + i]
+    data[b*4 + i] = temp
+  }
 }
