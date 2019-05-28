@@ -63,6 +63,18 @@
       </span>
       <span class="hidden" id="colors">
         <h1>Colors</h1>
+        <p>Palette Generator</p>
+        <select id="color-heur" onchange="optionSelectChange(this)">
+          <option value="rand" selected>Random</option>
+          <option value="k-means">K-Means</option>
+          <option value="least-avg">Least Average</option>
+          <option value="disperate">Disperate Colors</options>
+        </select>
+        <span id="color-heur">
+          <p class="all">Palette Size</p>
+          <input id="palette-size" type="number" class="all" value="8" />
+        </span>
+        <input id="apply" class="apply" type="button" value="Apply" onclick="apply()" />
       </span>
       <span class="hidden" id="dither">
         <h1>Dither</h1>

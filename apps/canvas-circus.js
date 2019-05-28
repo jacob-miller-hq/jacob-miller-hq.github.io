@@ -180,6 +180,37 @@ function fromPixels() {
 
 // palette functions
 
+function colors(heur, k) {
+  switch(heur) {
+    case "rand":
+      randPalette(k)
+      break
+    case "k-means":
+      kMeansPalette(k)
+      break
+    case "least-avg":
+      leastAvgPalette(k)
+      break
+    case "disperate":
+      disperatePalette(k)
+      break
+    default:
+      console.log("No palette generator for", heur)
+  }
+  populatePalette()
+}
+
+function randPalette(k) {
+  palette = []
+  for(let i = 0; i < k; i++) {
+    color = [0, 0, 0, 0]
+    for(let j = 0; j < 4; j++) {
+      color[j] = Math.floor(Math.random() * 256)
+    }
+    palette.push(color)
+  }
+}
+
 function kMeansPalette(k) {
   let newPalette = []; // centers
   let points = [];
@@ -227,10 +258,10 @@ function kMeansPalette(k) {
   if (count == 10 * k) {
     console.log('timed out');
   }
-  for (let i = 0; i < k; i++) {
-    palette.push(newPalette[i])
-  }
-  // palette = newPalette;
+  // for (let i = 0; i < k; i++) {
+  //   palette.push(newPalette[i])
+  // }
+  palette = newPalette;
   populatePalette()
 }
 
@@ -238,6 +269,7 @@ function leastAvgPalette(k) {
   /*
    * as expected, this doesn't work very well.
    */
+  palette = []
   let i = 0;
   if (palette.length == 0) {
     // average pixels
@@ -289,6 +321,7 @@ function leastAvgPalette(k) {
 
 function disperatePalette(k) {
   // average pixels (first color)
+  palette = []
   let i = 0;
   let avgIdx = -1;
   if (palette.length == 0) {
@@ -1017,6 +1050,11 @@ function apply(name=null) {
     case "dither":
       dither()
       break
+    case "colors":
+      heuristic = optionsDiv.querySelector("select#color-heur").value
+      paletteSize = Math.floor(optionsDiv.querySelector("input#palette-size").value)
+      colors(heuristic, paletteSize)
+      break
     default:
       console.log("No case for:", name)
   }
@@ -1280,7 +1318,7 @@ function switchOptions(toolName) {
 
 function optionSelectChange(select) {
   els = optionsDiv.querySelector("span#" + select.id).children
-  console.log(els)
+  // console.log(els)
   for(let e = 0; e < els.length; e++) {
     el = els[e]
     if(el.classList.contains(select.value) || el.classList.contains("all")) {
@@ -1312,7 +1350,7 @@ function populatePalette() {
     swatch.style.visibility = "hidden"
     paletteDiv.appendChild(swatch)
 
-    if(palette[i][3] < 0x20) {
+    if(palette[i][3] < 0x40) {
       swatch.style.width = swatch.offsetWidth - 2 + "px"
       swatch.style.height = swatch.offsetHeight - 2 + "px"
       swatch.style.border = "1px dashed white"
